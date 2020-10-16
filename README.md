@@ -1,5 +1,5 @@
-# multizone-sdk
-MultiZone® Security for RISC-V processors
+# multizone-sdk-pfsc
+MultiZone® Security for Microsemi Polarfire SoC
 
 **MultiZone® Security** is the quick and safe way to add security and separation to RISC-V processors. MultiZone software can retrofit existing designs. If you don’t have TrustZone-like hardware, or if you require finer granularity than one secure world, you can take advantage of high security separation without the need for hardware and software redesign, eliminating the complexity associated with managing a hybrid hardware/software security scheme. RISC-V standard ISA doesn't define TrustZone-like primitives to provide hardware separation. To shield critical functionality from untrusted third-party components, MultiZone provides hardware-enforced, software-defined separation of multiple equally secure worlds. Unlike antiquated hypervisor-like solutions, MultiZone is self-contained, presents an extremely small attack surface, and it is policy driven, meaning that no coding is required – and in fact even allowed.
 
@@ -7,19 +7,9 @@ MultiZone works with any 32-bit or 64-bit RISC-V standard processors  with Physi
 
 This version of the GNU-based SDK supports the following development hardware:
 
-- [Xilinx Artix-7 Arty FPGA Evaluation Kit](https://www.xilinx.com/products/boards-and-kits/arty.html)
 - [Microchip PolarFire SoC FPGA Icicle Kit](https://www.microsemi.com/existing-parts/parts/152514)
 
-The Arty FPGA Evaluation Kit works with the following softcore bitstreams:
-
-- [Hex Five X300 RV32ACIMU - Permissive open source free for any use.](https://github.com/hex-five/multizone-fpga)
-- [SiFive E31 RV32ACIMU - Proprietary. Evaluation license required.](https://www.sifive.com/cores/e31)
-- [SiFive S51 RV64ACIMU - Proprietary. Evaluation license required.](https://www.sifive.com/cores/s51)
-
-The Xilinx Arty FPGA comes in two versions: 35T and 100T
-- Hex Five's X300 bitstream works with version 35T
-- SiFive's bitstreams up to v19.02 work with version 35T
-- SiFive's bitstreams after v19.02 work with version 100T
+--------------------------------- TBD ------------------------------------------------------- 
 
 For instructions on how to upload the bitstream to the ARTY board and how to connect the [Olimex debug head ARM-USB-TINY-H](https://www.olimex.com/Products/ARM/JTAG/ARM-USB-TINY-H/) see [Arty FPGA Dev Kit Getting Started Guide](https://sifive.cdn.prismic.io/sifive%2Fed96de35-065f-474c-a432-9f6a364af9c8_sifive-e310-arty-gettingstarted-v1.0.6.pdf)
 

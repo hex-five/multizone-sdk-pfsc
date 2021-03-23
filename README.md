@@ -9,32 +9,68 @@ This version of the GNU-based SDK supports the following development hardware:
 
 - [Microchip PolarFire SoC FPGA Icicle Kit](https://www.microsemi.com/existing-parts/parts/152514)
 
-TBC
+TBD ...
 
 
 ### MultiZone SDK Installation ###
 
-TBD
+- multizone-sdk-pfsc.tar.xz (request a beta trail at info@hex-five.com)
+- [RISC-V Prebuilt Toolchain](https://hex-five.com/wp-content/uploads/riscv-gnu-toolchain-20200613.tar.xz)
+- [Microchip OpenOCD](https://www.microsemi.com/product-directory/design-tools/4879-softconsole#downloads)
+
+TBD ...
 
 
 ### Build & load the MultiZone reference application ###
 
-TBD
+```
+cd ~/multizone-sdk-pfsc
+export RISCV=~/riscv-gnu-toolchain-20200613
+export OPENOCD=~/SoftConsole-v6.4/openocd
+make
+make load
+```
+
+TBD ...
 
 
 ### Run the MultiZone reference application ###
 
-TBD
+```
+=====================================================================
+      	             Hex Five MultiZone® Security                    
+    Copyright© 2020 Hex Five Security, Inc. - All Rights Reserved    
+=====================================================================
+This version of MultiZone® Security is meant for evaluation purposes 
+only. As such, use of this software is governed by the Evaluation    
+License. There may be other functional limitations as described in   
+the evaluation SDK documentation. The commercial version of the      
+software does not have these restrictions.                           
+=====================================================================
+Machine ISA   : 0x00101105 RV64 ACIMU 
+Vendor        : 0x00000000  
+Architecture  : 0x00000000  
+Implementation: 0x00000000 
+Hart id       : 0x0 
+CPU clock     : 78 MHz 
+RTC clock     : 1000 KHz 
+
+Z1 > Commands: yield send recv pmp load store exec dma stats timer restart 
+
+Z1 > 
+```
+
+TBD ...
 
 
 ### Technical Specs ###
 
-TBD
+TBD ...
 
 
 ### Additional Resources ###
 
-TBD
+TBD ...
 
 
 ### Legalities ###

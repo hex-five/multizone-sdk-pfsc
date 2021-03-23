@@ -1,4 +1,4 @@
-# multizone-sdk-pfsc
+# multizone-sdk-pfsc (Beta Version)
 MultiZone® Security for Microsemi Polarfire SoC
 
 **MultiZone® Security** is the quick and safe way to add security and separation to RISC-V processors. MultiZone software can retrofit existing designs. If you don’t have TrustZone-like hardware, or if you require finer granularity than one secure world, you can take advantage of high security separation without the need for hardware and software redesign, eliminating the complexity associated with managing a hybrid hardware/software security scheme. RISC-V standard ISA doesn't define TrustZone-like primitives to provide hardware separation. To shield critical functionality from untrusted third-party components, MultiZone provides hardware-enforced, software-defined separation of multiple equally secure worlds. Unlike antiquated hypervisor-like solutions, MultiZone is self-contained, presents an extremely small attack surface, and it is policy driven, meaning that no coding is required – and in fact even allowed.
@@ -14,7 +14,6 @@ TBD ...
 
 ### MultiZone SDK Installation ###
 
-- multizone-sdk-pfsc.tar.xz (request a beta trail at info@hex-five.com)
 - [RISC-V Prebuilt Toolchain](https://hex-five.com/wp-content/uploads/riscv-gnu-toolchain-20200613.tar.xz)
 - [Microchip OpenOCD](https://www.microsemi.com/product-directory/design-tools/4879-softconsole#downloads)
 

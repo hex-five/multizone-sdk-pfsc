@@ -6,6 +6,7 @@
 #include "multizone.h"
 #include "owi_sequence.h"
 
+//int main (void){ while(1) MZONE_YIELD();}
 int main (void){ while(1) MZONE_WFI();}
 //int main (void){ volatile int i; while(1) i++;}
 

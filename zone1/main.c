@@ -559,6 +559,10 @@ int readline() {
 // ------------------------------------------------------------------------
 int main (void) {
 
+	//while(1) MZONE_YIELD();
+	//while(1) MZONE_WFI();
+	//volatile int i; while(1) i++;
+
 	CSRW(mtvec, trap_handler);  	// register trap handler
 	CSRS(mie, 1<<27 | 1<<7 | 1<<3); // enable external interrupts (UART0, TMR, SW/DMA)
     CSRS(mstatus, 1<<3);			// enable global interrupts

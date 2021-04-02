@@ -10,10 +10,8 @@
 #define mzone ".word 0x00300073;"
 
 /* Thread Management */
-#define MZONE_YIELD() \
-	asm volatile ("li a0, 0;" mzone : : : "a0")
-#define MZONE_WFI() \
-	asm volatile ("li a0, 1;" mzone : : : "a0")
+#define MZONE_YIELD() asm volatile ("li a0, 0;" mzone : : : "a0");
+#define MZONE_WFI()   asm volatile ("li a0, 1;" mzone : : : "a0");
 
 /* Secure Messaging */
 #if __riscv_xlen==32
@@ -21,53 +19,52 @@
 	#define MZONE_SEND(zone, msg) ({ \
 		register uint32_t a0 asm ("a0"); \
 		asm volatile ( \
-		" lw a2, 0*4+%1; " \
-		" lw a3, 1*4+%1; " \
-		" lw a4, 2*4+%1; " \
-		" lw a5, 3*4+%1; " \
-		" mv a1, %2; 	 " \
-		" li a0, 2;  	 " \
-		  mzone			   \
-		: "=r"(a0) : "m"(*(const char (*)[16]) msg), "r"((const int)zone) : "a1","a2","a3","a4","a5"); \
+		"mv a1, %2;" \
+		"lw a2, 0*4+%1;" \
+		"lw a3, 1*4+%1;" \
+		"lw a4, 2*4+%1;" \
+		"lw a5, 3*4+%1;" \
+		"li a0, 2;" mzone : "=r"(a0) : "m"(*(const char (*)[16]) msg), "r"((int)zone) : "a1","a2","a3","a4","a5"); \
 		a0; \
 	})
+
 	#define MZONE_RECV(zone, msg) ({ \
 		register uint32_t a0 asm ("a0"); \
+		register uint32_t a2 asm ("a2"); \
+		register uint32_t a3 asm ("a3"); \
+		register uint32_t a4 asm ("a4"); \
+		register uint32_t a5 asm ("a5"); \
 		asm volatile ( \
-		" mv a1, %2; 	 " \
-		" li a0, 3;  	 " \
-		  mzone        	   \
-		" sw a2, 0*4+%1; " \
-		" sw a3, 1*4+%1; " \
-		" sw a4, 2*4+%1; " \
-		" sw a5, 3*4+%1; " \
-		: "=r"(a0), "=m"(*(const char (*)[16]) msg) : "r"((const int)zone) : "a1","a2","a3","a4","a5"); \
+		"mv a1, %5; " \
+		"li a0, 3;" mzone : "=r"(a0), "=r"(a2),"=r"(a3),"=r"(a4),"=r"(a5) : "r"((int)zone) : "a1"); \
+		*((uint32_t *)(msg+0*4)) = a2; \
+		*((uint32_t *)(msg+1*4)) = a3; \
+		*((uint32_t *)(msg+2*4)) = a4; \
+		*((uint32_t *)(msg+3*4)) = a5; \
 		a0; \
 	})
 
 #else
 
-	/* Secure Messaging */
 	#define MZONE_SEND(zone, msg) ({ \
-		register uint32_t a0 asm ("a0"); \
+		register uint64_t a0 asm ("a0"); \
 		asm volatile ( \
-		" ld a2, 0*8+%1; " \
-		" ld a3, 1*8+%1; " \
-		" mv a1, %2; 	 " \
-		" li a0, 2;  	 " \
-		  mzone			   \
-		: "=r"(a0) : "m"(*(const char (*)[16]) msg), "r"((const int)zone) : "a1","a2","a3"); \
+		"mv a1, %2;" \
+		"ld a2, 0*8+%1;" \
+		"ld a3, 1*8+%1;" \
+		"li a0, 2;" mzone : "=r"(a0) : "m"(*(const char (*)[16]) msg), "r"((int)zone) : "a1","a2","a3"); \
 		a0; \
 	})
+
 	#define MZONE_RECV(zone, msg) ({ \
-		register uint32_t a0 asm ("a0"); \
+		register uint64_t a0 asm ("a0"); \
+		register uint64_t a2 asm ("a2"); \
+		register uint64_t a3 asm ("a3"); \
 		asm volatile ( \
-		" mv a1, %2; 	 " \
-		" li a0, 3;  	 " \
-		  mzone        	   \
-		" sd a2, 0*8+%1; " \
-		" sd a3, 1*8+%1; " \
-		: "=r"(a0), "=m"(*(const char (*)[16]) msg) : "r"((const int)zone) : "a1","a2","a3"); \
+		"mv a1, %3; " \
+		"li a0, 3;" mzone : "=r"(a0), "=r"(a2),"=r"(a3) : "r"((int)zone) : "a1"); \
+		*((uint64_t *)(msg+0*8)) = a2; \
+		*((uint64_t *)(msg+1*8)) = a3; \
 		a0; \
 	})
 
@@ -79,37 +76,24 @@
 	#define MZONE_RDTIME() ({ \
 		register uint32_t a0 asm ("a0"), a1 asm ("a1"); \
 		asm volatile ("li a0, 4;" mzone : "=r"(a0), "=r"(a1)); \
-		(uint64_t)a1<<32|a0; \
+		(uint64_t)a1<<32 | a0; \
 	})
-	#define MZONE_WRTIME(val) ({ \
-		asm volatile ( \
-		"mv a1, %0; " \
-		"mv a2, %1; " \
-		"li a0, 5;  " \
-		 mzone       \
-		: : "r"((uint32_t)val), "r"((uint32_t)(val>>32)): "a0","a1","a2"); \
-	})
+
 	#define MZONE_RDTIMECMP() ({ \
 		register uint32_t a0 asm ("a0"), a1 asm ("a1"); \
-		asm volatile ("li a0, 6;" mzone : "=r"(a0), "=r"(a1)); \
-		(uint64_t)a1<<32|a0; \
+		asm volatile ("li a0, 5;" mzone : "=r"(a0), "=r"(a1)); \
+		(uint64_t)a1<<32 | a0; \
 	})
-	#define MZONE_WRTIMECMP(val) ({ \
+
+	#define MZONE_WRTIMECMP(val) \
 		asm volatile ( \
-		"mv a1, %0; " \
-		"mv a2, %1; " \
-		"li a0, 7;  " \
-		 mzone       \
-		: : "r"((uint32_t)val), "r"((uint32_t)(val>>32)): "a0","a1","a2"); \
-	})
-	#define MZONE_ADTIMECMP(val) ({ \
+		"mv a1, %0; mv a2, %1;" \
+		"li a0, 6;" mzone : : "r"((uint32_t)val), "r"((uint32_t)((uint64_t)val>>32)) : "a0", "a1", "a2" );
+
+	#define MZONE_ADTIMECMP(val) \
 		asm volatile ( \
-		"mv a1, %0; " \
-		"mv a2, %1; " \
-		"li a0, 8;  " \
-		mzone        \
-		: : "r"((uint32_t)val), "r"((uint32_t)(val>>32)): "a0","a1","a2"); \
-	})
+		"mv a1, %0; mv a2, %1;" \
+		"li a0, 7;" mzone : : "r"((uint32_t)val), "r"((uint32_t)((uint64_t)val>>32)) : "a0", "a1", "a2" );
 
 #else
 
@@ -118,40 +102,32 @@
 		asm volatile ("li a0, 4;" mzone : "=r"(a0)); \
 		a0; \
 	})
-/*	#define MZONE_WRTIME(val) ({ \
-		asm volatile ( \
-		"mv a1, %0; " \
-		"li a0, 5;  " \
-		 mzone       \
-		: : "r"((uint32_t)val), "r"((uint32_t)(val>>32)): "a0","a1","a2"); \
-	}) */
+
 	#define MZONE_RDTIMECMP() ({ \
 		register uint64_t a0 asm ("a0"); \
-		asm volatile ("li a0, 6;" mzone : "=r"(a0)); \
+		asm volatile ("li a0, 5;" mzone : "=r"(a0)); \
 		a0; \
 	})
-	#define MZONE_WRTIMECMP(val) ({ \
+
+	#define MZONE_WRTIMECMP(val) \
 		asm volatile ( \
-		"mv a1, %0; " \
-		"li a0, 7;  " \
-		 mzone       \
-		: : "r"(val) : "a0","a1"); \
-	})
-	#define MZONE_ADTIMECMP(val) ({ \
+		"mv a1, %0;" \
+		"li a0, 6;" mzone : : "r"((uint64_t)val) : "a0", "a1");
+
+	#define MZONE_ADTIMECMP(val) \
 		asm volatile ( \
-		"mv a1, %0; " \
-		"li a0, 8;  " \
-		mzone        \
-		: : "r"(val): "a0","a1"); \
-	})
+		"mv a1, %0;" \
+		"li a0, 7;" mzone : : "r"((uint64_t)val) : "a0", "a1");
 
 #endif
 
 /* Fast CSR read */
-#define MZONE_CSRR(csr) ({	\
-	register unsigned long a0 asm ("a0"); \
-	asm volatile ("li a1, %1; li a0, 9;" mzone : "=r"(a0) : "I"(csr) : "a1"); \
-	a0; \
+#define MZONE_CSRR(CSR_XXX) ({	\
+		register unsigned long a0 asm ("a0"); \
+		asm volatile ( \
+		"mv a1, %1;" \
+		"li a0, 8;" mzone : "=r"(a0) : "r"((unsigned long)CSR_XXX) : "a1"); \
+		a0; \
 })
 
 #define CSR_MSTATUS			 0
@@ -161,8 +137,8 @@
 #define CSR_MEPC             4
 #define CSR_MCAUSE			 5
 #define CSR_MTVAL			 6
-#define CSR_MIP				 7
 
+#define CSR_MIP				 7
 #define CSR_MISA			 8
 #define CSR_MVENDORID		 9
 #define CSR_MARCHID			10
@@ -181,12 +157,13 @@
 	#define CSR_MHPMCOUNTER4H 	20
 #endif
 
-#define CSR_MHPMCOUNTER26 	24 // kernel irq lat cycle min
-#define CSR_MHPMCOUNTER27 	25 // kernel irq lat cycle max
-#define CSR_MHPMCOUNTER28 	27 // kernel ctx sw instr min
-#define CSR_MHPMCOUNTER29 	28 // kernel ctx sw instr max
-#define CSR_MHPMCOUNTER30 	29 // kernel ctx sw cycle min
-#define CSR_MHPMCOUNTER31 	30 // kernel ctx sw cycle max
+#define CSR_MHPMCOUNTER26 	21 // kernel irq lat cycle min
+#define CSR_MHPMCOUNTER27 	22 // kernel irq lat cycle max
+//                          23 //
+#define CSR_MHPMCOUNTER28 	24 // kernel ctx sw instr min
+#define CSR_MHPMCOUNTER29 	25 // kernel ctx sw instr max
+#define CSR_MHPMCOUNTER30 	26 // kernel ctx sw cycle min
+#define CSR_MHPMCOUNTER31 	27 // kernel ctx sw cycle max
 
 
 /* Privileged Pseudoinstructions */

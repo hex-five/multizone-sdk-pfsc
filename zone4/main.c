@@ -5,9 +5,9 @@
 
 int main (void){
 
-	//int main (void){ while(1) MZONE_YIELD();}
-	//int main (void){ while(1) MZONE_WFI();}
-	//int main (void){ volatile int i; while(1) i++;}
+	//while(1) MZONE_YIELD();
+	//while(1) MZONE_WFI();
+	//volatile int i; while(1) i++;
 
 	while(1){
 

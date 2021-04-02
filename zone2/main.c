@@ -74,6 +74,10 @@ __attribute__((interrupt())) void plic_handler(void) { // plic interrupt (11)
 
 int main (void){
 
+	//while(1) MZONE_YIELD();
+	//while(1) MZONE_WFI();
+	//volatile int i; while(1) i++;
+
  	// vectored trap handler
 	static void (*trap_vect[32])(void) = {};
 	trap_vect [0] = trp_handler;

@@ -31,7 +31,7 @@ __attribute__((interrupt())) void tmr_handler(void)  { // machine timer interrup
 	// togle LED2
 	GPIO_REG(GPIO_GPOUT) ^= LED2;
 
-	// reset timer (clear irq7 mip)
+	// reset free running tstimer (clear irq7 mip)
 	MZONE_ADTIMECMP((uint64_t)1000*RTC_FREQ/1000);
 
 }
@@ -103,7 +103,7 @@ int main (void){
 	PLIC_REG(PLIC_EN_OFFSET + PLIC_SW3_SOURCE/32*4) |= 1 << (PLIC_SW3_SOURCE % 32);
 	CSRS(mie, 1<<11);
 
-    // set timer
+    // set timer (free running)
 	MZONE_ADTIMECMP((uint64_t)1000*RTC_FREQ/1000);
     CSRS(mie, 1<<7);
 

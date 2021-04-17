@@ -38,6 +38,8 @@
 #define UART_IER 			0x04 // Interrupt enable register
 #define UART_IER_ERBFI_MSK	1<<0 // Enables received data available interrupt
 
+#define UART_IRQ			27
+
 // -----------------------------------------------------------------------------
 // GPIO 2
 // ------------------------------------------------------------------------------
@@ -117,6 +119,7 @@
 #define PLIC_THRES_OFFSET			0x200000
 #define PLIC_CLAIM_OFFSET			0x200004
 
+#define PLIC_SOURCES 			187
 #define PLIC_UART0_RX_SOURCE	 90
 #define PLIC_SW1_SOURCE			118
 #define PLIC_SW2_SOURCE			 43 // GPIO2.30

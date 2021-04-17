@@ -10,18 +10,16 @@
 #include "platform.h"
 #include "multizone.h"
 
-#define BUFFER_SIZE 16
+#define BUFFER_SIZE 32
 static struct{
 	char data[BUFFER_SIZE];
-	volatile int p0; // read
-	volatile int p1; // write
+	volatile int r; // read
+	volatile int w; // write
 } buffer;
 
-static char inputline[32+1]="";
+static char inputline[BUFFER_SIZE+1]="";
 
 __attribute__(( interrupt())) void trap_handler(void){
-
-	#define MCAUSE_IRQ_MASK ( 1UL<< (__riscv_xlen-1) )
 
 	const unsigned long mcause = MZONE_CSRR(CSR_MCAUSE);
 	const unsigned long mepc   = MZONE_CSRR(CSR_MEPC);
@@ -66,28 +64,37 @@ __attribute__(( interrupt())) void trap_handler(void){
 	case 11: printf("Environment call from M-mode : 0x%08x 0x%08x 0x%08x \n", mcause, mepc, mtval);
 			 break;
 
-	case MCAUSE_IRQ_MASK | 3 : // Machine software interrupt (DMA)
-			 write(1, "\e7\e[2K", 6);   	// save curs pos & clear entire line
-			 printf("\rDMA transfer complete \n", mcause, mepc, mtval);
-			 printf("source : 0x%08x \n", DMA_REG(DMA_TR_SRC_OFF));
-			 printf("dest   : 0x%08x \n", DMA_REG(DMA_TR_DEST_OFF));
-			 printf("size   : 0x%08x \n", DMA_REG(DMA_TR_SIZE_OFF));
-			 write(1, "\e8\e[4B", 6);   	// restore curs pos & curs down 4x
-			 DMA_REG(DMA_CH_STATUS_OFF) = (1<<16 | 1<<8 | 1<<0); // clear irq's by writing 1’s (R/W1C)
-			 return;
+	#define IRQ (1UL <<__riscv_xlen-1)
 
-	case MCAUSE_IRQ_MASK | 7 : // Machine timer interrupt
-			 write(1, "\e7\e[2K", 6);   	// save curs pos & clear entire line
-			 printf("\rTimer interrupt : 0x%08x 0x%08x 0x%08x \n", mcause, mepc, mtval);
-			 write(1, "\nZ1 > %s", 6); write(1, inputline, strlen(inputline));
-			 write(1, "\e8\e[2B", 6);   	// restore curs pos & curs down 2x
-			 MZONE_WRTIMECMP((uint64_t)-1); // clear mip.7
-			 return;
+#ifdef DMA_REG
+	case IRQ | 3 :	// Machine software interrupt (DMA)
+			write(1, "\e7\e[2K", 6);   	// save curs pos & clear entire line
+			printf("\rDMA transfer complete \n", mcause, mepc, mtval);
+			printf("source : 0x%08x \n", DMA_REG(DMA_TR_SRC_OFF));
+			printf("dest   : 0x%08x \n", DMA_REG(DMA_TR_DEST_OFF));
+			printf("size   : 0x%08x \n", DMA_REG(DMA_TR_SIZE_OFF));
+			write(1, "\e8\e[4B", 6);   	// restore curs pos & curs down 4x
+			DMA_REG(DMA_CH_STATUS_OFF) = (1<<16 | 1<<8 | 1<<0); // clear irq's by writing 1’s (R/W1C)
+			return;
+#endif
 
-	case MCAUSE_IRQ_MASK | 27 : // UART0 clint interrupt
-			if (buffer.p0==buffer.p1) {buffer.p0=0; buffer.p1=0;}
-			read(0, &buffer.data[buffer.p1++], 1);
-			if (buffer.p1> BUFFER_SIZE-1) buffer.p1 = BUFFER_SIZE-1;
+	case IRQ | 7 :	// Machine timer interrupt (one-shot)
+			write(1, "\e7\e[2K", 6);   // save curs pos & clear entire line
+			printf("\rTimer interrupt : 0x%08x 0x%08x 0x%08x \n", mcause, mepc, mtval);
+			write(1, "\nZ1 > %s", 6); write(1, inputline, strlen(inputline));
+			write(1, "\e8\e[2B", 6);   // restore curs pos & curs down 2x
+			CSRC(mie, 1<<7); 			// disable one-shot timer
+			return;
+
+	case IRQ | 27 : // UART0 clint interrupt
+			;char temp[8]; int count = read(0, &temp, 8);
+			if (count > 0){
+				//if(buffer.w==BUFFER_SIZE){write(1, "\n>>> BUFFER FULL !!!\n", 21); while(1);}
+				#define MIN(a,b) (((a)<(b))?(a):(b))
+				count = MIN(count, BUFFER_SIZE - buffer.w);
+				memcpy(&buffer.data[buffer.w], temp, count);
+				buffer.w += count;
+			}
 			return;
 
 	default : printf("Exception : 0x%08x 0x%08x 0x%08x \n", mcause, mepc, mtval);
@@ -159,73 +166,64 @@ __attribute__(( interrupt())) void trap_handler(void){
 void print_stats(void){
 
 	#define MHZ (CPU_FREQ/1000000)
-	const int COUNT = 10; // odd values for accurate median
+	const int COUNT = 11; // odd values for accurate median
 	int cycles[COUNT], instrs[COUNT];
-
-	// Kernel stats - read irq latency
-	const unsigned long irq_instr = MZONE_CSRR(CSR_MHPMCOUNTER26);
-	const unsigned long irq_cycle = MZONE_CSRR(CSR_MHPMCOUNTER27);
-	MZONE_CSRR(CSR_MHPMCOUNTER31); // reset kernel stats
 
 	for (int i=0; i<COUNT; i++){
 
 		const unsigned long I1 = MZONE_CSRR(CSR_MINSTRET);
 		const unsigned long C1 = MZONE_CSRR(CSR_MCYCLE);
 		MZONE_YIELD();
-		const unsigned long C2 = MZONE_CSRR(CSR_MCYCLE);
 		const unsigned long I2 = MZONE_CSRR(CSR_MINSTRET);
+		const unsigned long C2 = MZONE_CSRR(CSR_MCYCLE);
 
 		cycles[i] = C2-C1; instrs[i] = I2-I1;
 
 	}
-
-	// --------------------- Adjustments --------------------------
-	const unsigned long ADJC1 = MZONE_CSRR(CSR_MCYCLE);
-	const unsigned long ADJC2 = MZONE_CSRR(CSR_MCYCLE);
-	const int ADJC = ADJC2-ADJC1; // ignore wrap around
-
-	const unsigned long ADJI1 = MZONE_CSRR(CSR_MINSTRET);
-								MZONE_CSRR(CSR_MCYCLE);
-								MZONE_CSRR(CSR_MCYCLE);
-	const unsigned long ADJI2 = MZONE_CSRR(CSR_MINSTRET);
-	const int ADJI = ADJI2-ADJI1; // ignore wrap around
-
-	for (int i=0; i<COUNT; i++)	{cycles[i] -= ADJC; instrs[i] -= ADJI;}
-	// ------------------------------------------------------------
 
 	int max_cycle = 0;
 	for (int i=0; i<COUNT; i++)	max_cycle = (cycles[i] > max_cycle ? cycles[i] : max_cycle);
 	char str[16]; sprintf(str, "%lu", max_cycle); const int col_len = strlen(str);
 
 	for (int i=0; i<COUNT; i++)
-		printf("%*d cycles %*d instr %*d us \n", col_len, cycles[i], col_len, instrs[i], col_len-1, cycles[i]/MHZ);
+		printf("%*d instr %*d cycles %*d us \n", col_len, instrs[i], col_len, cycles[i], col_len, cycles[i]/MHZ);
 
 	qsort(cycles, COUNT, sizeof(int), cmpfunc);
 	qsort(instrs, COUNT, sizeof(int), cmpfunc);
 
 	printf("-----------------------------------------\n");
-	int min = cycles[0], med = cycles[COUNT/2], max = cycles[COUNT-1];
+    int min = instrs[0], med = instrs[COUNT/2], max = instrs[COUNT-1];
+    printf("instrs min/med/max = %d/%d/%d \n", min, med, max);
+	min = cycles[0], med = cycles[COUNT/2], max = cycles[COUNT-1];
 	printf("cycles min/med/max = %d/%d/%d \n", min, med, max);
-	    min = instrs[0], med = instrs[COUNT/2], max = instrs[COUNT-1];
-	printf("instrs min/med/max = %d/%d/%d \n", min, med, max);
 	printf("time   min/med/max = %d/%d/%d us \n", min/MHZ, med/MHZ, max/MHZ);
 
 	// Kernel stats (#ifdef STATS)
+	const unsigned irq_instr_min = (unsigned)(MZONE_CSRR(CSR_MHPMCOUNTER26) & 0xFFFF);
+	const unsigned irq_instr_max = (unsigned)(MZONE_CSRR(CSR_MHPMCOUNTER26) >>16);
+	const unsigned irq_cycle_min = (unsigned)(MZONE_CSRR(CSR_MHPMCOUNTER27) & 0xFFFF);
+	const unsigned irq_cycle_max = (unsigned)(MZONE_CSRR(CSR_MHPMCOUNTER27) >>16);
 	const unsigned long instr_min = MZONE_CSRR(CSR_MHPMCOUNTER28);
 	const unsigned long instr_max = MZONE_CSRR(CSR_MHPMCOUNTER29);
 	const unsigned long cycle_min = MZONE_CSRR(CSR_MHPMCOUNTER30);
-	const unsigned long cycle_max = MZONE_CSRR(CSR_MHPMCOUNTER31); // reset
+	const unsigned long cycle_max = MZONE_CSRR(CSR_MHPMCOUNTER31); // <= reset kern stats
+
 	if (instr_min>0){
+
 		printf("\n");
-		printf("Kernel\n");
+		printf("Kernel time\n");
 		printf("-----------------------------------------\n");
-		printf("cycles min/max = %lu/%lu \n", cycle_min, cycle_max);
 		printf("instrs min/max = %lu/%lu \n", instr_min, instr_max);
+		printf("cycles min/max = %lu/%lu \n", cycle_min, cycle_max);
 		printf("time   min/max = %lu/%lu us\n", cycle_min/MHZ, cycle_max/MHZ);
+
+		printf("\n");
+		printf("IRQ latency\n");
 		printf("-----------------------------------------\n");
-		printf("irq lat cycles = %lu \n", irq_cycle);
-		printf("irq lat instrs = %lu \n", irq_instr);
-		printf("time           = %lu us\n", irq_cycle/MHZ);
+		printf("instrs min/max = %d/%d \n", irq_instr_min, irq_instr_max);
+		printf("cycles min/max = %d/%d \n", irq_cycle_min, irq_cycle_max);
+		printf("time   min/max = %d/%d us\n", irq_cycle_min/MHZ, irq_cycle_max/MHZ);
+
 	}
 
 }
@@ -305,17 +303,18 @@ void print_pmp(void){
 // ------------------------------------------------------------------------
 void msg_handler() {
 
-	// Message handler
-	for (int zone=2; zone<=4; zone++){
+	typedef enum {zone1=1, zone2, zone3, zone4} Zone;
 
-		char msg[16];
+	for (Zone zone=zone1; zone<=zone4; zone++){
+
+		char msg[16]={0};
 
 		if (MZONE_RECV(zone, msg)) {
 
-			if (strcmp("ping", msg) == 0)
+			if (strcmp("ping", msg) == 0) {
 				MZONE_SEND(zone, "pong");
 
-			else {
+			} else {
 				write(1, "\e7\e[2K", 6);   // save curs pos & clear entire line
 				printf("\rZ%d > %.16s\n", zone, msg);
 				write(1, "\nZ1 > ", 6); write(1, inputline, strlen(inputline));
@@ -369,6 +368,7 @@ void cmd_handler(){
 			asm ( "jr (%0)" : : "r"(addr));
 		} else printf("Syntax: exec address \n");
 
+#ifdef DMA_REG
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "dma")==0){
 	// --------------------------------------------------------------------
@@ -378,6 +378,7 @@ void cmd_handler(){
 			DMA_REG(DMA_TR_SIZE_OFF) = strtoul(tk[3], NULL, 16);
 			DMA_REG(DMA_CH_CTRL_OFF) = 0b0001; // en irqs & start transfer
 		} else printf("Syntax: dma source dest size \n");
+#endif
 
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "send")==0){
@@ -405,8 +406,7 @@ void cmd_handler(){
 		const unsigned long C1 = MZONE_CSRR(CSR_MCYCLE);
 		MZONE_YIELD();
 		const unsigned long C2 = MZONE_CSRR(CSR_MCYCLE);
-		const unsigned long C0 = MZONE_CSRR(CSR_MCYCLE)-MZONE_CSRR(CSR_MCYCLE);
-		const unsigned long C = C2-C1+C0;
+		const unsigned long C = C2-C1;
 		const int T = C/(CPU_FREQ/1000000);
 		printf( (C>0 ? "yield : elapsed cycles %d / time %dus \n" : "yield : n/a \n"), C, T);
 
@@ -417,9 +417,9 @@ void cmd_handler(){
 			const uint64_t ms = abs(strtoull(tk[1], NULL, 10));
 			const uint64_t T0 = MZONE_RDTIME();
 			const uint64_t T1 = T0 + ms*RTC_FREQ/1000;
-			MZONE_WRTIMECMP(T1);
 			printf("timer set T0=%lu, T1=%lu \n", (unsigned long)(T0*1000/RTC_FREQ),
 												  (unsigned long)(T1*1000/RTC_FREQ) );
+			MZONE_WRTIMECMP(T1); CSRS(mie, 1<<7); // one-shot timer
 		} else printf("Syntax: timer ms \n");
 
 	// --------------------------------------------------------------------
@@ -441,13 +441,22 @@ void cmd_handler(){
 	// --------------------------------------------------------------------
 	else if (strcmp(tk[0], "csrr")==0){ // test
 	// --------------------------------------------------------------------
-		//unsigned long C0 = MZONE_CSRR(CSR_MCYCLE);
+		volatile unsigned long regval;
+		unsigned long C0 = MZONE_CSRR(CSR_MCYCLE);
+		  //asm volatile( "csrr %0, ustatus" : "=r"(regval) ); // illegal
+		    asm volatile( "csrr %0, mip" : "=r"(regval) );
+		  //regval = CSRR(mip);
+		  //regval = MZONE_CSRR(CSR_MIP);
 		unsigned long C1 = MZONE_CSRR(CSR_MCYCLE);
-		volatile unsigned long misa; asm volatile( "csrr %0, misa" : "=r"(misa) );
-		unsigned long C2 = MZONE_CSRR(CSR_MCYCLE);
-		printf( "csrr: cycles %d \n", (int)(C2-C1)); //-(int)(C1-C0));
+		printf( "0x%08x (%d cycles) \n", regval, (int)(C1-C0) );
 
-	} else printf("Commands: yield send recv pmp load store exec dma stats timer restart \n");
+	} else {
+		printf("Commands: yield send recv pmp load store exec stats timer restart ");
+#ifdef DMA_REG
+		printf("dma ");
+#endif
+		printf("\n");
+	}
 
 }
 
@@ -459,9 +468,14 @@ int readline() {
 	static int esc=0;
 	static char history[8][sizeof(inputline)]={"","","","","","","",""}; static int h=-1;
 
-	while ( buffer.p1>buffer.p0 ) {
+	int eol = 0; // end of line
+	
+		while ( !eol && buffer.w > buffer.r ) {
 
-		const char c = buffer.data[buffer.p0++];
+		CSRC(mie, 1<<UART_IRQ);
+			const char c = buffer.data[buffer.r++];
+			if (buffer.r >= buffer.w) {buffer.r = 0; buffer.w = 0;}
+		CSRS(mie, 1<<UART_IRQ);
 
 		if (c=='\e'){
 			esc=1;
@@ -536,36 +550,36 @@ int readline() {
 			write(1, "\e[C", 3); // move curs right 1 pos
 
 		} else if (c=='\r') {
-			p=0; esc=0;
-			write(1, "\n", 1);
-			for (int i = sizeof(inputline)-1; i > 0; i--) if (inputline[i]==' ') inputline[i]='\0'; else break;
-
+			p=0; esc=0; eol = 1;
+			// trim
+			while (inputline[strlen(inputline)-1]==' ') inputline[strlen(inputline)-1]='\0';
+			while (inputline[0]==' ') for (int i = 0; i < strlen(inputline); i++) inputline[i]=inputline[i+1];
+			// save line to history
 			if (strlen(inputline)>0 && strcmp(inputline, history[0])!=0){
 				for (int i = 8-1; i > 0; i--) strcpy(history[i], history[i-1]);
 				strcpy(history[0], inputline);
-			}
-			h = -1;
+			} h = -1;
+			write(1, "\n", 1);
 
-			return 1;
-
-		} else esc=0;
+		} else
+			esc=0;
 
 	}
 
-	return 0;
+	return eol;
 
 }
 
 // ------------------------------------------------------------------------
 int main (void) {
 
-	//while(1) MZONE_YIELD();
 	//while(1) MZONE_WFI();
-	//volatile int i; while(1) i++;
+	//while(1) MZONE_YIELD();
+	//while(1);
 
-	CSRW(mtvec, trap_handler);  	// register trap handler
-	CSRS(mie, 1<<27 | 1<<7 | 1<<3); // enable external interrupts (UART0, TMR, SW/DMA)
-    CSRS(mstatus, 1<<3);			// enable global interrupts
+	CSRW(mtvec, trap_handler);			 // register trap handler
+	CSRS(mie, 1<<UART_IRQ | 1<<DMA_IRQ); // enable external interrupts (UART0, SW/DMA)
+    CSRS(mstatus, 1<<3);				 // enable global interrupts
 
 	open("UART", 0, 0);
 

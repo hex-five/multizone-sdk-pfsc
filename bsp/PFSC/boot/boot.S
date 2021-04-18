@@ -108,31 +108,30 @@ boot:
 	li x1, SYSCTRL_GPIO_INT_FAB_31 | SYSCTRL_GPIO_INT_FAB_30
 	sw x1, SYSCTRL_GPIO_INT_FAB(x2)
 
-
 	# -------------------------------------------------------------------------------------------------------
 	# Reset PLIC
 	# -------------------------------------------------------------------------------------------------------
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*0; sd zero, (t0) # Hart0 M
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*1; sd zero, (t0) # Hart1 M
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*2; sd zero, (t0) # Hart1 S
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*3; sd zero, (t0) # Hart2 M
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*4; sd zero, (t0) # Hart2 S
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*5; sd zero, (t0) # Hart3 M
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*6; sd zero, (t0) # Hart3 S
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*7; sd zero, (t0) # Hart4 M
-	la t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*8; sd zero, (t0) # Hart4 S
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*0; sd zero, (t0) # Hart0 M
+/*	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*1; sd zero, (t0) # Hart1 M
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*2; sd zero, (t0) # Hart1 S
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*3; sd zero, (t0) # Hart2 M
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*4; sd zero, (t0) # Hart2 S
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*5; sd zero, (t0) # Hart3 M
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*6; sd zero, (t0) # Hart3 S
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*7; sd zero, (t0) # Hart4 M
+	li t0, PLIC_BASE + PLIC_EN_OFFSET + 0x80*8; sw zero, (t0) # Hart4 S
+*/
+	li t0, PLIC_BASE + PLIC_THRES_OFFSET + 0x1000*0; sw zero, (t0) # Hart0 M
 
-	la t0, PLIC_BASE + PLIC_THRES_OFFSET + 0x1000*0; sw zero, (t0) # Hart0 M
 
-
-	# -------------------------------------------------------------------------------------------------------
+/*	# -------------------------------------------------------------------------------------------------------
 	# Wait 100ms for HW initialization - TBD: really necessary? 100ms?
 	# -------------------------------------------------------------------------------------------------------
 	la x2, CLINT_BASE+CLINT_MTIME; ld t0, (x2)
-	li t1, 100*RTC_FREQ/1000; add t1, t0, t1
+	li t1, RTC_FREQ/10; add t1, t0, t1
 	1: ld t0, (x2)
 	bltu t0, t1, 1b
-
+*/
 
 	# -------------------------------------------------------------------------------------------------------
 	# exit to MultiZone

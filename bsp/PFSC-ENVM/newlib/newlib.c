@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <platform.h>
+#include "../platform.h"
 
 // ----------------------------------------------------------------------------
 int _close(int file) {

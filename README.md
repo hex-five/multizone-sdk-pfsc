@@ -1,5 +1,5 @@
 # multizone-sdk-pfsc (Beta Version)
-MultiZone® Security for Microsemi Polarfire SoC
+MultiZone® Trusted Firmware for Microchip Polarfire SoC
 
 **MultiZone® Security** is the quick and safe way to add security and separation to RISC-V processors. MultiZone software can retrofit existing designs. If you don’t have TrustZone-like hardware, or if you require finer granularity than one secure world, you can take advantage of high security separation without the need for hardware and software redesign, eliminating the complexity associated with managing a hybrid hardware/software security scheme. RISC-V standard ISA doesn't define TrustZone-like primitives to provide hardware separation. To shield critical functionality from untrusted third-party components, MultiZone provides hardware-enforced, software-defined separation of multiple equally secure worlds. Unlike antiquated hypervisor-like solutions, MultiZone is self-contained, presents an extremely small attack surface, and it is policy driven, meaning that no coding is required – and in fact even allowed.
 
@@ -7,33 +7,52 @@ MultiZone works with any 32-bit or 64-bit RISC-V standard processors with Physic
 
 This version of the GNU-based SDK supports the following development hardware:
 
-- [Microchip PolarFire SoC FPGA Icicle Kit](https://www.microsemi.com/existing-parts/parts/152514)
-
-TBD ...
+- [Microchip PolarFire SoC Icicle Kit](https://www.microsemi.com/existing-parts/parts/152514) ([Reference Design 2021.02](https://github.com/polarfire-soc/icicle-kit-reference-design/releases/tag/2021.02))
 
 
 ### MultiZone SDK Installation ###
 
-- [RISC-V Prebuilt Toolchain](https://hex-five.com/wp-content/uploads/riscv-gnu-toolchain-20200613.tar.xz)
-- [Microchip OpenOCD](https://www.microsemi.com/product-directory/design-tools/4879-softconsole#downloads)
+**Microchip prerequisites**
 
-TBD ...
+- [Microchip SoftConsole (RISC-V Toolchain and OpenOCD)](https://www.microsemi.com/product-directory/design-tools/4879-softconsole#downloads)
+- [Microchip FlashPro Programmer (fpgenprog)](https://www.microsemi.com/product-directory/programming-and-debug/4977-flashpro)
 
 
-### Build & load the MultiZone reference application ###
+**MultiZone Security SDK**
 
 ```
-cd ~/multizone-sdk-pfsc
-export RISCV=~/riscv-gnu-toolchain-20200613
-export OPENOCD=~/SoftConsole-v6.4/openocd
-make
-make load
+cd ~
+git clone https://github.com/hex-five/multizone-sdk-pfsc.git
+cd multizone-sdk-pfsc
 ```
 
-TBD ...
+
+### Build and load the MultiZone Trusted Firmware ###
+
+```
+export RISCV=.../SoftConsole-v2021.1/riscv-unknown-elf-gcc
+export OPENOCD=.../SoftConsole-v2021.1/openocd
+export SC_INSTALL_DIR=.../microsemi/SoftConsole-v2021.1
+export FPGENPROG=.../Libero_SoC_v2021.1/Libero/bin64/fpgenprog
+```
+build and load to ram for debug (boot mode 0):
+
+```
+make BOARD=PFSC-LIM 
+make BOARD=PFSC-LIM load
+```
+
+build and load to flash for production (boot mode 1):
+
+```
+make BOARD=PFSC-ENVM 
+make BOARD=PFSC-ENVM load
+```
+
+alternatively use the included Eclipse CDT project
 
 
-### Run the MultiZone reference application ###
+### Run the MultiZone Trusted Firmware ###
 
 ```
 =====================================================================
@@ -58,6 +77,9 @@ Z1 > Commands: yield send recv pmp load store exec dma stats timer restart
 
 Z1 > 
 ```
+- observe Zone 2 heartbit LED2 (red)
+- press SW2 to toggle LED4 (yellow)
+- press SW3 to toggle LED3 (yellow)
 
 TBD ...
 

@@ -2,10 +2,6 @@
 
 TARGET = boot.elf
 
-.PHONY: all
-all: clean
-all: $(TARGET)
-
 BOARDS_DIR   := ../../../ext/bare-metal-lib/src/boards
 PLATFORM_DIR := ../../../ext/bare-metal-lib/src/platform
 
@@ -92,7 +88,7 @@ LDFLAGS += -Xlinker --gc-sections
 #####################################################
 
 .PHONY: all
-all: $(TARGET)
+all: $(BOARDS_DIR) $(TARGET)
 
 ASM_OBJS := $(ASM_SRCS:.S=.o)
 C_OBJS := $(C_SRCS:.c=.o)
@@ -118,6 +114,11 @@ $(ASM_OBJS): %.o: %.S $(HEADERS)
 $(C_OBJS): %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
+XML_DIR := ../../../ext/icicle-ref-design/XML
+$(BOARDS_DIR):
+	mkdir -p $(BOARDS_DIR)/icicle-kit-es
+	python3 $(PLATFORM_DIR)/soc_config_generator/mpfs_configuration_generator.py $(XML_DIR)/ICICLE_MSS_eMMC_cfg.xml $(BOARDS_DIR)/icicle-kit-es
+
 .PHONY: clean
 clean:
-	rm -f $(LINK_OBJS) $(HEX) $(BIN) $(LST) $(SIZ)
+	rm -rf $(LINK_OBJS) $(HEX) $(BIN) $(LST) $(SIZ) $(BOARDS_DIR)

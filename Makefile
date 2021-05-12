@@ -8,12 +8,12 @@ BOARD ?= PFSC-ENVM
 ifeq ($(BOARD), PFSC-ENVM)
     ARCH := rv64
     RISCV_ARCH := $(ARCH)imac
-    RISCV_ABI := lp64		
+    RISCV_ABI := lp64
 else ifeq ($(BOARD), PFSC-LIM)
     ARCH := rv64
     RISCV_ARCH := $(ARCH)imac
     RISCV_ABI := lp64
-else	
+else
     $(error Unsupported board $(BOARD))
 endif
 
@@ -41,13 +41,13 @@ export GDB     := $(CROSS_COMPILE)gdb
 export AR      := $(CROSS_COMPILE)ar
 export LD      := $(CROSS_COMPILE)ld
 export STRIP   := $(CROSS_COMPILE)strip
-export SIZE   := $(CROSS_COMPILE)size
+export SIZE    := $(CROSS_COMPILE)size
 
 #############################################################
 # Rules for building multizone
 #############################################################
 
-.PHONY: all 
+.PHONY: all
 all: clean
 	$(MAKE) -C zone1
 	$(MAKE) -C zone2

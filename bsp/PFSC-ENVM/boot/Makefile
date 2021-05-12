@@ -43,7 +43,7 @@ INCLUDES += -I $(BOARDS_DIR)/icicle-kit-es
 # -c -o "src/platform/mpfs_hal/system_startup.o" "../src/platform/mpfs_hal/system_startup.c"
 
 CFLAGS += -march=rv64gc -mabi=lp64d -mcmodel=medany -msmall-data-limit=8 -mstrict-align -mno-save-restore -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections
-CFLAGS += -O0 -Wextra  -g -DNDEBUG
+CFLAGS += -Os -Wextra  -g -DNDEBUG
 CFLAGS += -std=gnu11 -Wstrict-prototypes -Wbad-function-cast
 #-Wa,-adhlns="src/platform/mpfs_hal/system_startup.o.lst"
 

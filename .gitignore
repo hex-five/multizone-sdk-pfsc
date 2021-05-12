@@ -68,12 +68,14 @@ local.properties
 *.ko
 *.obj
 *.elf
+*.bin
 
 # Linker output
 *.ilk
 *.map
 *.exp
 *.lst
+*.siz
 
 # Precompiled Headers
 *.gch

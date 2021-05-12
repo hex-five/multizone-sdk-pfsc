@@ -6,33 +6,34 @@ TARGET = boot.elf
 all: clean
 all: $(TARGET)
 
-MCHP_SRC_DIR := ../../../ext/mchp
+BOARDS_DIR   := ../../../ext/bare-metal-lib/src/boards
+PLATFORM_DIR := ../../../ext/bare-metal-lib/src/platform
 
-ASM_SRCS += $(MCHP_SRC_DIR)/platform/mpfs_hal/startup_gcc/mss_entry.S
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/startup_gcc/system_startup.c
+ASM_SRCS += $(PLATFORM_DIR)/mpfs_hal/startup_gcc/mss_entry.S
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/startup_gcc/system_startup.c
 
-#C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_axiswitch.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_clint.c
-#C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_h2f.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_irq_handler_stubs.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_l2_cache.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_mpu.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_mtrap.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_plic.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_pmp.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/mss_util.c
+#C_SRCS  += $(PLATFORM_DIR)/mpfs_hal/common/mss_axiswitch.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_clint.c
+#C_SRCS  += $(PLATFORM_DIR)/mpfs_hal/common/mss_h2f.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_irq_handler_stubs.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_l2_cache.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_mpu.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_mtrap.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_plic.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_pmp.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_util.c
 
-#C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/nwc/mss_cfm.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/nwc/mss_ddr.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/nwc/mss_ddr_debug.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/nwc/mss_io.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/nwc/mss_nwc_init.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/nwc/mss_pll.c
-C_SRCS   += $(MCHP_SRC_DIR)/platform/mpfs_hal/common/nwc/mss_sgmii.c
+#C_SRCS  += $(PLATFORM_DIR)/mpfs_hal/common/nwc/mss_cfm.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/nwc/mss_ddr.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/nwc/mss_ddr_debug.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/nwc/mss_io.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/nwc/mss_nwc_init.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/nwc/mss_pll.c
+C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/nwc/mss_sgmii.c
 
-INCLUDES += -I $(MCHP_SRC_DIR)/platform
-INCLUDES += -I $(MCHP_SRC_DIR)/platform/platform_config_reference
-INCLUDES += -I $(MCHP_SRC_DIR)/boards/icicle-kit-es
+INCLUDES += -I $(PLATFORM_DIR)
+INCLUDES += -I $(PLATFORM_DIR)/platform_config_reference
+INCLUDES += -I $(BOARDS_DIR)/icicle-kit-es
 
 #Building file: ../src/platform/mpfs_hal/system_startup.c
 # -march=rv64gc -mabi=lp64d -mcmodel=medany -msmall-data-limit=8 -mstrict-align -mno-save-restore -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -w  -g -DNDEBUG
@@ -81,7 +82,7 @@ CFLAGS += -std=gnu11 -Wstrict-prototypes -Wbad-function-cast
 # ./src/application/hart0/e51.o
 # ./src/application/helper.o
 
-LINKER_SCRIPT = $(MCHP_SRC_DIR)/platform/platform_config_reference/linker/mpfs-envm.ld
+LINKER_SCRIPT = $(PLATFORM_DIR)/platform_config_reference/linker/mpfs-envm.ld
 LDFLAGS += -T $(LINKER_SCRIPT)
 LDFLAGS += --specs=nano.specs --specs=nosys.specs
 LDFLAGS += -nostartfiles

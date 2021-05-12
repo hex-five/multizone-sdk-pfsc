@@ -1,0 +1,3 @@
+[submodule "ext/bare-metal-lib"]
+	path = ext/bare-metal-lib
+	url = https://github.com/polarfire-soc/polarfire-soc-bare-metal-library.git

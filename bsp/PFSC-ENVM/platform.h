@@ -4,9 +4,9 @@
 #define HEXFIVE_PLATFORM_H
 
 
-#define CPU_FREQ	 78740000 // ~ 80MHz
-#define RTC_FREQ	  1000000 // 1 MHz
-#define AXI_FREQ	 20000000
+#define CPU_FREQ	 600000000 // 600MHz
+#define RTC_FREQ	   1000000 //   1MHz
+#define APB_AHB_FREQ 150000000 // 150MHz (UART)
 
 // -----------------------------------------------------------------------------
 // RTC (CLIC)

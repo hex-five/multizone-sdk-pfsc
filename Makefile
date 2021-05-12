@@ -41,6 +41,7 @@ export GDB     := $(CROSS_COMPILE)gdb
 export AR      := $(CROSS_COMPILE)ar
 export LD      := $(CROSS_COMPILE)ld
 export STRIP   := $(CROSS_COMPILE)strip
+export SIZE   := $(CROSS_COMPILE)size
 
 #############################################################
 # Rules for building multizone

@@ -59,7 +59,7 @@ int _open(const char* name, int flags, int mode) {
 	if (strcmp(name, "UART")==0){
 
 		UART_REG(UART_LCR) = UART_LCR_DLAB_MSK;  // Enable div latch access
-		UART_REG(UART_DLR) = AXI_FREQ/115200/8;  // 20000000/8/115200 = 21.70
+		UART_REG(UART_DLR) = APB_AHB_FREQ / (115200*16);  // PCLK_Frequency / (baud_rate * 16)
 		UART_REG(UART_LCR) = UART_LCR_WLS_MSK;   // Disable div latch access & set Word length=8bit
 
 		UART_REG(UART_FCR) = 0b00000111; // Clear TX/RX FIFO

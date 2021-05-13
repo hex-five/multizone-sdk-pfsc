@@ -11,20 +11,19 @@ index 202b96f..c86bbd7 100644
          static void mss_mux_post_mss_pll_config(void)
  {
     /*
-diff --git a/src/platform/mpfs_hal/startup_gcc/system_startup.c b/src/platform/mpfs_hal/startup_gcc/system_startup.c
-index accd9ea..5864d3d 100644
---- a/src/platform/mpfs_hal/startup_gcc/system_startup.c
-+++ b/src/platform/mpfs_hal/startup_gcc/system_startup.c
-@@ -93,6 +93,9 @@ __attribute__((weak)) int main_first_hart(void)
- #ifdef  MPFS_HAL_HW_CONFIG
-         /* main hart init's the PLIC */
-         PLIC_init_on_reset();
-+
-+	asm("la ra, 0x202205f2; jr (ra)"); // CG
-+
-         /*
-          * Start the other harts. They are put in wfi in entry.S
-          * When debugging, harts are released from reset separately,
+diff --git a/src/platform/mpfs_hal/startup_gcc/mss_entry.S b/src/platform/mpfs_hal/startup_gcc/mss_entry.S
+index 9e049de..0aaa95a 100644
+--- a/src/platform/mpfs_hal/startup_gcc/mss_entry.S
++++ b/src/platform/mpfs_hal/startup_gcc/mss_entry.S
+@@ -55,7 +55,7 @@ _start:
+     csrw medeleg, 0
+ .skip_e51:
+     # mscratch must be init to zero- we are not using scratch memory
+-    csrw mscratch, zero
++   #csrw mscratch, zero
+     csrw mcause, zero
+     csrw mepc, zero
+     /*
 diff --git a/src/platform/platform_config_reference/linker/mpfs-envm.ld b/src/platform/platform_config_reference/linker/mpfs-envm.ld
 index 62632ad..0d74775 100644
 --- a/src/platform/platform_config_reference/linker/mpfs-envm.ld
@@ -38,3 +37,16 @@ index 62632ad..0d74775 100644
      ram_LIM (rwx) : ORIGIN  = 0x08000000, LENGTH = 1024k
      ram_dtm (rwx) : ORIGIN  = 0x01000000, LENGTH = 7k       /* DTIM */
      scratchpad(rwx):  ORIGIN = 0x0A000000, LENGTH = 512k
+diff --git a/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h b/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
+index 3abed6b..cd9d0e4 100644
+--- a/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
++++ b/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
+@@ -46,7 +46,7 @@
+ #endif
+ 
+ #ifndef MPFS_HAL_LAST_HART
+-#define MPFS_HAL_LAST_HART   4
++#define MPFS_HAL_LAST_HART   0 //4
+ #endif
+ 
+ /*------------------------------------------------------------------------------

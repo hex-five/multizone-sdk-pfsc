@@ -5,9 +5,10 @@ TARGET = boot.elf
 BOARDS_DIR   := ../../../ext/bare-metal-lib/src/boards
 PLATFORM_DIR := ../../../ext/bare-metal-lib/src/platform
 
+C_SRCS   := ./e51.c
+
 ASM_SRCS += $(PLATFORM_DIR)/mpfs_hal/startup_gcc/mss_entry.S
 C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/startup_gcc/system_startup.c
-
 #C_SRCS  += $(PLATFORM_DIR)/mpfs_hal/common/mss_axiswitch.c
 C_SRCS   += $(PLATFORM_DIR)/mpfs_hal/common/mss_clint.c
 #C_SRCS  += $(PLATFORM_DIR)/mpfs_hal/common/mss_h2f.c
@@ -88,7 +89,7 @@ LDFLAGS += -Xlinker --gc-sections
 #####################################################
 
 .PHONY: all
-all: $(BOARDS_DIR) $(TARGET)
+all: $(TARGET)
 
 ASM_OBJS := $(ASM_SRCS:.S=.o)
 C_OBJS := $(C_SRCS:.c=.o)
@@ -108,10 +109,10 @@ $(TARGET): $(LINK_OBJS) $(LINK_DEPS)
 	$(OBJCOPY) -S -O ihex -j.text -j.ram_code -j.sdata -j.sdata2 -j.data --gap-fill 0x00 $(TARGET) $(HEX)
 	$(OBJCOPY) -S -I ihex -O binary $(HEX) $(BIN)
 
-$(ASM_OBJS): %.o: %.S $(HEADERS)
+$(ASM_OBJS): %.o: %.S $(BOARDS_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
-$(C_OBJS): %.o: %.c $(HEADERS)
+$(C_OBJS): %.o: %.c $(BOARDS_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 XML_DIR := ../../../ext/icicle-ref-design/XML

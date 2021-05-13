@@ -37,7 +37,7 @@ CFLAGS += -Os -Wextra  -g -DNDEBUG
 CFLAGS += -std=gnu11 -Wstrict-prototypes -Wbad-function-cast
 #CFLAGS+= -Wa,-adhlns="boot.o.lst"
 
-LINKER_SCRIPT = $(PLATFORM_DIR)/platform_config_reference/linker/mpfs-envm.ld
+LINKER_SCRIPT = $(PLATFORM_DIR)/platform_config_reference/linker/mpfs-lim.ld
 LDFLAGS += -T $(LINKER_SCRIPT)
 LDFLAGS += --specs=nano.specs --specs=nosys.specs
 LDFLAGS += -nostartfiles

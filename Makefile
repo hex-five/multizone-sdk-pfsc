@@ -70,7 +70,7 @@ clean:
 	$(MAKE) -C zone3 clean
 	$(MAKE) -C zone4 clean
 	$(MAKE) -C bsp/$(BOARD)/boot clean
-	rm -f multizone.hex
+	rm -f multizone.elf multizone.hex multizone.bin bootmode0 bootmode1
 
 #############################################################
 # Load to LIM (debug - boot mode 0)
@@ -93,7 +93,7 @@ ifeq ($(BOARD), PFSC-LIM)
     GDB_LOAD_CMDS += -ex "set arch riscv:$(ARCH)"
     GDB_LOAD_CMDS += -ex "set mem inaccessible-by-default off"
     GDB_LOAD_CMDS += -ex "target extended-remote localhost:$(GDB_PORT)"
-    GDB_LOAD_CMDS += -ex "monitor reset halt"
+    GDB_LOAD_CMDS += -ex "monitor reset init"
     GDB_LOAD_CMDS += -ex "load"
     GDB_LOAD_CMDS += -ex "monitor resume"
     GDB_LOAD_CMDS += -ex "monitor shutdown"
@@ -133,6 +133,6 @@ ifeq ($(BOARD), PFSC-ENVM)
 	$(LD) multizone.tmp -T bsp/PFSC-ENVM/hex2elf.ld -o multizone.elf && \
 	$(STRIP) -s multizone.elf && \
 	java -jar $(MPFS_BOOT_MODE_PROG) --bootmode 1 --die MPFS250T_ES --package FCVG484 multizone.elf && \
-	rm -rf bootmode1 multizone.tmp multizone.bin multizone.elf
+	rm -rf bootmode1 multizone.tmp multizone.bin 
 
 endif

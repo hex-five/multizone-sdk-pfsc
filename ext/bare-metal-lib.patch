@@ -12,7 +12,7 @@ index 202b96f..c86bbd7 100644
  {
     /*
 diff --git a/src/platform/mpfs_hal/startup_gcc/mss_entry.S b/src/platform/mpfs_hal/startup_gcc/mss_entry.S
-index 9e049de..0aaa95a 100644
+index 9e049de..e07ae56 100644
 --- a/src/platform/mpfs_hal/startup_gcc/mss_entry.S
 +++ b/src/platform/mpfs_hal/startup_gcc/mss_entry.S
 @@ -55,7 +55,7 @@ _start:
@@ -24,6 +24,28 @@ index 9e049de..0aaa95a 100644
      csrw mcause, zero
      csrw mepc, zero
      /*
+diff --git a/src/platform/mpfs_hal/startup_gcc/system_startup.c b/src/platform/mpfs_hal/startup_gcc/system_startup.c
+index accd9ea..1b4551b 100644
+--- a/src/platform/mpfs_hal/startup_gcc/system_startup.c
++++ b/src/platform/mpfs_hal/startup_gcc/system_startup.c
+@@ -230,7 +230,7 @@ __attribute__((weak)) int main_other_hart(void)
+ 
+     case 0U:
+         __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h0));
+-        e51();
++        e51(); asm("csrr t0, mscratch; csrw mtvec, t0; ecall");
+         break;
+ 
+     case 1U:
+@@ -456,7 +456,7 @@ __attribute__((weak)) uint8_t init_mem_protection_unit(void)
+  */
+ __attribute__((weak)) uint8_t init_pmp(uint8_t hart_id)
+ {
+-    pmp_configure(hart_id);
++  //pmp_configure(hart_id);
+     return (0U);
+ }
+ 
 diff --git a/src/platform/platform_config_reference/linker/mpfs-envm.ld b/src/platform/platform_config_reference/linker/mpfs-envm.ld
 index 62632ad..0d74775 100644
 --- a/src/platform/platform_config_reference/linker/mpfs-envm.ld
@@ -38,7 +60,7 @@ index 62632ad..0d74775 100644
      ram_dtm (rwx) : ORIGIN  = 0x01000000, LENGTH = 7k       /* DTIM */
      scratchpad(rwx):  ORIGIN = 0x0A000000, LENGTH = 512k
 diff --git a/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h b/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
-index 3abed6b..cd9d0e4 100644
+index 3abed6b..318ff28 100644
 --- a/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
 +++ b/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
 @@ -46,7 +46,7 @@
@@ -46,7 +68,7 @@ index 3abed6b..cd9d0e4 100644
  
  #ifndef MPFS_HAL_LAST_HART
 -#define MPFS_HAL_LAST_HART   4
-+#define MPFS_HAL_LAST_HART   0 //4
++#define MPFS_HAL_LAST_HART   0
  #endif
  
  /*------------------------------------------------------------------------------

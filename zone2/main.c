@@ -93,9 +93,9 @@ int main (void){
 	GPIO_REG(SW3_CFG) = 0b000<<5 | 1<<3 | 1<<1; // SW3 gpio2.31 input, 000 = irq lev h
 
 	// Enable GPIO outputs
-	GPIO_REG(LED2_CFG) = 1<<0; // LED2 gpio2.17 output
-	GPIO_REG(LED3_CFG) = 1<<0; // LED3 gpio2.18 output
-	GPIO_REG(LED4_CFG) = 1<<0; // LED4 gpio2.19 output
+	GPIO_REG(LED2_CFG) = 1<<0; // LED2 (red) gpio2.17 output
+	GPIO_REG(LED3_CFG) = 1<<0; // LED3 (yellow) gpio2.18 output
+	GPIO_REG(LED4_CFG) = 1<<0; // LED4 (yellow) gpio2.19 output
 
 	// Enable PLIC sources: SW2 priority 1, SW3 priority 2
 	PLIC_REG(PLIC_PRI_OFFSET + (PLIC_SW2_SOURCE << PLIC_PRI_SHIFT_PER_SOURCE)) = 0x1; // P1
@@ -110,6 +110,9 @@ int main (void){
 
     // enable global interrupts (TMR, PLIC)
     CSRS(mstatus, 1<<3);
+
+    // turn on hartbit LED2 (red)
+    GPIO_REG(GPIO_GPOUT) |= LED2;
 
     while(1){
 

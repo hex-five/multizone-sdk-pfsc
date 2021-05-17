@@ -78,7 +78,7 @@ Z1 > Commands: yield send recv pmp load store exec dma stats timer restart
 
 Z1 > 
 ```
-- observe Zone 2 heartbit LED2 (red)
+- observe Zone 2 heartbeat LED2 (red)
 - press SW2 to toggle LED4 (yellow)
 - press SW3 to toggle LED3 (yellow)
 

@@ -1,6 +1,6 @@
 ### https://github.com/github/gitignore/blob/master/Global/Eclipse.gitignore
 
-.project
+#.project
 .metadata
 bin/
 tmp/
@@ -9,7 +9,7 @@ tmp/
 *.swp
 *~.nib
 local.properties
-.settings/
+#.settings/
 .loadpath
 .recommenders
 
@@ -17,13 +17,13 @@ local.properties
 .externalToolBuilders/
 
 # Locally stored "Eclipse launch configurations"
-*.launch
+#*.launch
 
 # PyDev specific (Python IDE for Eclipse)
 *.pydevproject
 
 # CDT-specific (C/C++ Development Tooling)
-.cproject
+#.cproject
 
 # CDT- autotools
 .autotools
@@ -142,3 +142,4 @@ dkms.conf
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+/multizone-sdk-pfsc -k.launch

@@ -22,8 +22,9 @@ This version of the GNU-based SDK supports the following development hardware:
 
 ```
 cd ~
-git clone https://github.com/hex-five/multizone-sdk-pfsc.git
+git clone --recursive https://github.com/hex-five/multizone-sdk-pfsc.git
 cd multizone-sdk-pfsc
+git apply -p1 ext/bare-metal-lib.patch --directory=ext/bare-metal-lib
 ```
 
 
@@ -49,7 +50,7 @@ make BOARD=PFSC-ENVM
 make BOARD=PFSC-ENVM load
 ```
 
-alternatively use the included Eclipse CDT project
+alternatively, use the Eclipse CDT project included in this repo.
 
 
 ### Run the MultiZone Trusted Firmware ###

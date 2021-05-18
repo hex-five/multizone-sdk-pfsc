@@ -1,16 +1,13 @@
-# multizone-sdk-pfsc (Beta Version)
-MultiZone® Trusted Firmware for Microchip Polarfire SoC
+# MultiZone® Security TEE for PolarFire SoC (Beta Version)
 
-**MultiZone® Security** is the quick and safe way to add security and separation to RISC-V processors. MultiZone software can retrofit existing designs. If you don’t have TrustZone-like hardware, or if you require finer granularity than one secure world, you can take advantage of high security separation without the need for hardware and software redesign, eliminating the complexity associated with managing a hybrid hardware/software security scheme. RISC-V standard ISA doesn't define TrustZone-like primitives to provide hardware separation. To shield critical functionality from untrusted third-party components, MultiZone provides hardware-enforced, software-defined separation of multiple equally secure worlds. Unlike antiquated hypervisor-like solutions, MultiZone is self-contained, presents an extremely small attack surface, and it is policy driven, meaning that no coding is required – and in fact even allowed.
-
-MultiZone works with any 32-bit or 64-bit RISC-V standard processors with Physical Memory Protection unit and U mode.
+**MultiZone® Security** is the quick and safe way to add security and separation to PolarFire SoC devices. MultiZone software can retrofit existing designs. If you don’t have TrustZone-like hardware, or if you require finer granularity than one secure world, you can take advantage of high security separation without the need for hardware and software redesign, eliminating the complexity associated with managing a hybrid hardware/software security scheme. RISC-V standard ISA doesn't define TrustZone-like primitives to provide hardware separation. To shield critical functionality from untrusted third-party components, MultiZone provides hardware-enforced, software-defined separation of multiple equally secure worlds. Unlike antiquated hypervisor-like solutions, MultiZone is self-contained, presents an extremely small attack surface, and it is policy driven, meaning that no coding is required – and in fact even allowed.
 
 This version of the GNU-based SDK supports the following development hardware:
 
 - [Microchip PolarFire SoC Icicle Kit](https://www.microsemi.com/existing-parts/parts/152514) ([Reference Design 2021.02](https://github.com/polarfire-soc/icicle-kit-reference-design/releases/tag/2021.02))
 
 
-### MultiZone SDK Installation ###
+### MultiZone Installation ###
 
 **Microchip prerequisites**
 
@@ -18,7 +15,7 @@ This version of the GNU-based SDK supports the following development hardware:
 - [Microchip FlashPro Programmer (fpgenprog)](https://www.microsemi.com/product-directory/programming-and-debug/4977-flashpro)
 
 
-**MultiZone Security SDK**
+**MultiZone SDK**
 
 ```
 cd ~
@@ -28,7 +25,7 @@ git apply -p1 ext/bare-metal-lib.patch --directory=ext/bare-metal-lib
 ```
 
 
-### Build and load the MultiZone Trusted Firmware ###
+### Build and load the MultiZone TEE ###
 
 ```
 export RISCV=.../SoftConsole-v2021.1/riscv-unknown-elf-gcc
@@ -53,7 +50,7 @@ make BOARD=PFSC-ENVM load
 alternatively, use the Eclipse CDT project included in this repo.
 
 
-### Run the MultiZone Trusted Firmware ###
+### Run the MultiZone TEE ###
 
 ```
 =====================================================================

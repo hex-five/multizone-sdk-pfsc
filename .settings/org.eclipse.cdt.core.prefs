@@ -25,7 +25,7 @@ environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.19
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788.292592882/append=true
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788.292592882/appendContributed=false
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/BOARD/delimiter=\:
-environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/BOARD/operation=append
+environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/BOARD/operation=replace
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/BOARD/value=${ConfigName}
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/FPGENPROG/delimiter=\:
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/FPGENPROG/operation=append
@@ -42,9 +42,6 @@ environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.19
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/SC_INSTALL_DIR/delimiter=\:
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/SC_INSTALL_DIR/operation=append
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/SC_INSTALL_DIR/value=/home/cesare/microsemi/SoftConsole-v2021.1
-environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/TEST/delimiter=\:
-environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/TEST/operation=append
-environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/TEST/value=test
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/append=true
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880.291475788/appendContributed=false
 environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.toolchain.base.196591968.1753958880/BOARD/delimiter=\:

@@ -1,11 +1,14 @@
 /* Copyright(C) 2020 Hex Five Security, Inc. - All Rights Reserved */
 
-#include <string.h>	// strcmp()
-#include <inttypes.h> // uint16_t, ...
+#include <string.h>
 
 #include "platform.h"
 #include "multizone.h"
 
+static volatile char msg[16] = {'\0'};
+
+// ------------------------------------------------------------------------
+static void (*trap_vect[__riscv_xlen])(void) = {};
 __attribute__((interrupt())) void trp_handler(void)	 { // trap handler (0)
 
 	const unsigned long mcause = MZONE_CSRR(CSR_MCAUSE);
@@ -21,19 +24,24 @@ __attribute__((interrupt())) void trp_handler(void)	 { // trap handler (0)
 	case 8:	break; // Environment call from U-mode
 	}
 
-	asm volatile("ebreak");
+	for(;;);
 
 }
 __attribute__((interrupt())) void msi_handler(void)  { // machine software interrupt (3)
-	asm volatile("ebreak");
+
+	char const tmp[16];
+
+	if (MZONE_RECV(1, tmp))
+		memcpy((char *)msg, tmp, sizeof msg);
+
 }
 __attribute__((interrupt())) void tmr_handler(void)  { // machine timer interrupt (7)
 
-	// togle LED2
-	GPIO_REG(GPIO_GPOUT) ^= LED2;
+	// togle LED2 - thread safe
+    GPIO_REG(GPIO_REG(GPIO_GPOUT) & LED2 ? GPIO_CLEAR_BITS : GPIO_SET_BITS) = LED2;
 
 	// reset free running tstimer (clear irq7 mip)
-	MZONE_ADTIMECMP((uint64_t)1000*RTC_FREQ/1000);
+	MZONE_ADTIMECMP((uint64_t)500*RTC_FREQ/1000);
 
 }
 __attribute__((interrupt())) void plic_handler(void) { // plic interrupt (11)
@@ -50,7 +58,7 @@ __attribute__((interrupt())) void plic_handler(void) { // plic interrupt (11)
 		if (T > debounce){
 			debounce = T + 250*RTC_FREQ/1000;
 			MZONE_SEND(1, "IRQ SW2");
-			GPIO_REG(GPIO_GPOUT) ^= LED4;
+		    GPIO_REG(GPIO_REG(GPIO_GPOUT) & LED4 ? GPIO_CLEAR_BITS : GPIO_SET_BITS) = LED4;
 		}
 
 		GPIO_REG(GPIO_INTR) |= SW2; // clear irq
@@ -61,7 +69,7 @@ __attribute__((interrupt())) void plic_handler(void) { // plic interrupt (11)
 		if (T > debounce){
 			debounce = T + 250*RTC_FREQ/1000;
 			MZONE_SEND(1, "IRQ SW3");
-			GPIO_REG(GPIO_GPOUT) ^= LED3;
+            GPIO_REG(GPIO_REG(GPIO_GPOUT) & LED3 ? GPIO_CLEAR_BITS : GPIO_SET_BITS) = LED3;
 		}
 
 		GPIO_REG(GPIO_INTR) |= SW3; // clear irq
@@ -73,14 +81,14 @@ __attribute__((interrupt())) void plic_handler(void) { // plic interrupt (11)
 
 }
 
+// ------------------------------------------------------------------------
 int main (void){
 
 	//while(1) MZONE_YIELD();
 	//while(1) MZONE_WFI();
-	//volatile int i; while(1) i++;
+	//while(1);
 
  	// vectored trap handler
-	static void (*trap_vect[32])(void) = {};
 	trap_vect [0] = trp_handler;
 	trap_vect [3] = msi_handler;
 	trap_vect [7] = tmr_handler;
@@ -104,35 +112,48 @@ int main (void){
 	PLIC_REG(PLIC_EN_OFFSET + PLIC_SW3_SOURCE/32*4) |= 1 << (PLIC_SW3_SOURCE % 32);
 	CSRS(mie, 1<<11);
 
-    // set timer (free running)
-	MZONE_ADTIMECMP((uint64_t)1000*RTC_FREQ/1000);
+    // set & enable timer
+	MZONE_ADTIMECMP((uint64_t)500*RTC_FREQ/1000);
     CSRS(mie, 1<<7);
+    
+    // enable msip/inbox interrupt
+	CSRS(mie, 1<<3);    
 
-    // enable global interrupts (TMR, PLIC)
+	// enable global interrupts
     CSRS(mstatus, 1<<3);
 
     // turn on hartbit LED2 (red)
     GPIO_REG(GPIO_GPOUT) |= LED2;
 
-    while(1){
+    while (1) {
 
-		// Message handler
-		char msg[16];
-		if (MZONE_RECV(1, msg)) {
-			if (strcmp("ping", msg)==0) MZONE_SEND(1, "pong");
-			else if (strcmp("mie=0", msg)==0) CSRC(mstatus, 1<<3);
-			else if (strcmp("mie=1", msg)==0) CSRS(mstatus, 1<<3);
-			else if (strcmp("block", msg)==0) {
-				CSRC(mstatus, 1<<3);
-				while(!MZONE_RECV(1, msg)) {;}
-				CSRS(mstatus, 1<<3);
-			}
-			else MZONE_SEND(1, msg);
-		}
+        // Message handler
+        CSRC(mie, 1 << 3);
 
-		// Wait For Interrupt
-		MZONE_WFI();
+        if (msg[0] != '\0') {
 
-	}
+            if (strncmp("ping", (char*) msg, sizeof msg[0]) == 0)
+                MZONE_SEND(1, (char[16]){"pong"});
+            else if (strcmp("mie=0", (char*) msg) == 0)
+                CSRC(mstatus, 1 << 3);
+            else if (strcmp("mie=1", (char*) msg) == 0)
+                CSRS(mstatus, 1 << 3);
+            else if (strcmp("block", (char*) msg) == 0) {
+                CSRC(mstatus, 1 << 3);
+                for (;;)
+                    ;
+            } else
+                MZONE_SEND(1, msg);
+
+            msg[0] = '\0';
+
+        }
+
+        CSRS(mie, 1 << 3);
+
+        // Wait For Interrupt
+        MZONE_WFI();
+
+    }
 
 }

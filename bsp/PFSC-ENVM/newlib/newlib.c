@@ -5,7 +5,9 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "../platform.h"
+#include <platform.h>
+
+/* https://www.embecosm.com/appnotes/ean9/ean9-howto-newlib-1.0.html */
 
 // ----------------------------------------------------------------------------
 int _close(int file) {
@@ -79,7 +81,7 @@ int _read(int file, char *ptr, size_t len) {
 
 	if (isatty(file)) {
 
-		ssize_t count = 0;
+		size_t count = 0;
 
 		while( count<len && ( UART_REG(UART_LSR) & 1<<0 ) ){ // DR Data Ready
 			*ptr++ = (char)UART_REG(UART_RBR);
@@ -93,6 +95,21 @@ int _read(int file, char *ptr, size_t len) {
 }
 
 // ----------------------------------------------------------------------------
+void _putchar(const char c) {
+// ----------------------------------------------------------------------------
+
+	while ( (UART_REG(UART_LSR) & UART_LSR_THRE_MSK) == 0){;} // THRE Transmitter register empty
+
+	UART_REG(UART_THR) = c;
+
+	if (c == '\n') {
+		while ( (UART_REG(UART_LSR) & UART_LSR_THRE_MSK) == 0){;} // THRE
+		UART_REG(UART_THR) = '\r';
+	}
+
+}
+
+// ----------------------------------------------------------------------------
 size_t _write(int file, const void *ptr, size_t len) {
 // ----------------------------------------------------------------------------
 
@@ -102,15 +119,7 @@ size_t _write(int file, const void *ptr, size_t len) {
 
 		for (size_t i = 0; i < len; i++) {
 
-			while ( (UART_REG(UART_LSR) & UART_LSR_THRE_MSK) == 0){;} // THRE Transmitter register empty
-
-			UART_REG(UART_THR) = buff[i];
-
-			if (buff[i] == '\n') {
-				while ( (UART_REG(UART_LSR) & UART_LSR_THRE_MSK) == 0){;} // THRE
-				UART_REG(UART_THR) = '\r';
-			}
-
+		    _putchar(buff[i]);
 
 		}
 
@@ -119,6 +128,22 @@ size_t _write(int file, const void *ptr, size_t len) {
 	}
 
 	return -1;
+}
+
+// ----------------------------------------------------------------------------
+int _kill (int  pid, int  sig) {
+// ----------------------------------------------------------------------------
+
+	return -1;
+
+}
+
+// ----------------------------------------------------------------------------
+int _getpid () {
+// ----------------------------------------------------------------------------
+
+	return  1;
+
 }
 
 // open("UART", 0, 0); write(1, "Ok >\n", 5); char c='\0'; while(1) if ( read(0, &c, 1) >0 ) write(1, &c, 1);

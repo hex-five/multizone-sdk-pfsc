@@ -4,12 +4,8 @@
 # Platform definitions
 #############################################################
 
-BOARD ?= PFSC-ENVM
-ifeq ($(BOARD), PFSC-ENVM)
-    ARCH := rv64
-    RISCV_ARCH := $(ARCH)imac
-    RISCV_ABI := lp64
-else ifeq ($(BOARD), PFSC-LIM)
+BOARD ?= PFSC-LIM
+ifeq ($(filter $(BOARD), PFSC-LIM PFSC-ENVM ), $(BOARD))
     ARCH := rv64
     RISCV_ARCH := $(ARCH)imac
     RISCV_ABI := lp64
@@ -26,7 +22,7 @@ export RISCV_ARCH
 export RISCV_ABI
 
 #############################################################
-# RISC-V Toolchain definitions
+# Toolchain definitions
 #############################################################
 
 ifndef RISCV
@@ -54,6 +50,7 @@ all: clean
 	$(MAKE) -C zone3
 	$(MAKE) -C zone4
 	$(MAKE) -C bsp/$(BOARD)/boot
+
 	java -jar multizone.jar \
 		--arch $(BOARD) \
 		--config bsp/$(BOARD)/multizone.cfg \

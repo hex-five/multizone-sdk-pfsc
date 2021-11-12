@@ -19,4 +19,7 @@ void e51(void) {
 	/* Enable PLIC */
 	PLIC_SetPriority_Threshold(0);
 
+	/* Return to MultiZone boot */
+	asm("csrr t0, mscratch; csrw mtvec, t0; ecall");
+
 }

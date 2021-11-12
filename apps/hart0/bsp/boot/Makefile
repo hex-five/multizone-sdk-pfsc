@@ -2,8 +2,9 @@
 
 TARGET = boot.elf
 
-BOARDS_DIR   := ../../../ext/bare-metal-lib/src/boards
-PLATFORM_DIR := ../../../ext/bare-metal-lib/src/platform
+BOARDS_DIR   := ../../../../ext/bare-metal-lib/src/boards
+PLATFORM_DIR := ../../../../ext/bare-metal-lib/src/platform
+XML_DIR      := ../../../../ext/icicle-ref-design/XML
 
 C_SRCS   := ./boot.c
 
@@ -37,7 +38,7 @@ CFLAGS += -Os -Wextra  -g -DNDEBUG
 CFLAGS += -std=gnu11 -Wstrict-prototypes -Wbad-function-cast
 #CFLAGS+= -Wa,-adhlns="boot.o.lst"
 
-LINKER_SCRIPT = $(PLATFORM_DIR)/platform_config_reference/linker/mpfs-lim.ld
+LINKER_SCRIPT = $(PLATFORM_DIR)/platform_config_reference/linker/mpfs-$(MEM).ld
 LDFLAGS += -T $(LINKER_SCRIPT)
 LDFLAGS += --specs=nano.specs --specs=nosys.specs
 LDFLAGS += -nostartfiles
@@ -71,7 +72,6 @@ $(ASM_OBJS): %.o: %.S $(BOARDS_DIR)
 $(C_OBJS): %.o: %.c $(BOARDS_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
-XML_DIR := ../../../ext/icicle-ref-design/XML
 $(BOARDS_DIR):
 	mkdir -p $(BOARDS_DIR)/icicle-kit-es
 	python3 $(PLATFORM_DIR)/soc_config_generator/mpfs_configuration_generator.py $(XML_DIR)/ICICLE_MSS_eMMC_cfg.xml $(BOARDS_DIR)/icicle-kit-es

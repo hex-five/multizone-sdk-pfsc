@@ -1,16 +1,3 @@
-diff --git a/src/platform/mpfs_hal/common/nwc/mss_pll.c b/src/platform/mpfs_hal/common/nwc/mss_pll.c
-index 202b96f..c86bbd7 100644
---- a/src/platform/mpfs_hal/common/nwc/mss_pll.c
-+++ b/src/platform/mpfs_hal/common/nwc/mss_pll.c
-@@ -216,7 +216,7 @@ static void mss_mux_pre_mss_pll_config(void)
-  * eNVM as it will do as we approach the return instruction
-  * The mb() makes sure order of processing is not changed by the compiler
-  ******************************************************************************/
--__attribute__((section(".ram_codetext"))) \
-+__attribute__((section(".ram_codetext"), optimize("O0"))) \
-         static void mss_mux_post_mss_pll_config(void)
- {
-    /*
 diff --git a/src/platform/mpfs_hal/startup_gcc/mss_entry.S b/src/platform/mpfs_hal/startup_gcc/mss_entry.S
 index 9e049de..e07ae56 100644
 --- a/src/platform/mpfs_hal/startup_gcc/mss_entry.S
@@ -25,18 +12,9 @@ index 9e049de..e07ae56 100644
      csrw mepc, zero
      /*
 diff --git a/src/platform/mpfs_hal/startup_gcc/system_startup.c b/src/platform/mpfs_hal/startup_gcc/system_startup.c
-index accd9ea..1b4551b 100644
+index accd9ea..6bad203 100644
 --- a/src/platform/mpfs_hal/startup_gcc/system_startup.c
 +++ b/src/platform/mpfs_hal/startup_gcc/system_startup.c
-@@ -230,7 +230,7 @@ __attribute__((weak)) int main_other_hart(void)
- 
-     case 0U:
-         __asm volatile ("add sp, x0, %1" : "=r"(dummy) : "r"(app_stack_top_h0));
--        e51();
-+        e51(); asm("csrr t0, mscratch; csrw mtvec, t0; ecall");
-         break;
- 
-     case 1U:
 @@ -456,7 +456,7 @@ __attribute__((weak)) uint8_t init_mem_protection_unit(void)
   */
  __attribute__((weak)) uint8_t init_pmp(uint8_t hart_id)
@@ -82,7 +60,7 @@ index bdba0fa..0366c45 100644
    {
      __text_load = LOADADDR(.text);
 diff --git a/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h b/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
-index 3abed6b..318ff28 100644
+index 3abed6b..1343b16 100644
 --- a/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
 +++ b/src/platform/platform_config_reference/mpfs_hal_config/mss_sw_config.h
 @@ -46,7 +46,7 @@
@@ -94,3 +72,14 @@ index 3abed6b..318ff28 100644
  #endif
  
  /*------------------------------------------------------------------------------
+@@ -117,8 +117,8 @@
+ /*
+  * If not using item, comment out line below
+  */
+-#define SGMII_SUPPORT
+-#define DDR_SUPPORT
++//#define SGMII_SUPPORT /* Hex Five */
++//#define DDR_SUPPORT /* Hex Five */
+ #define MSSIO_SUPPORT
+ //#define SIMULATION_TEST_FEEDBACK
+ //#define E51_ENTER_SLEEP_STATE

@@ -6,9 +6,9 @@ all: $(TARGET)
 ASM_SRCS += $(NEWLIB_DIR)/crt0.S
 C_SRCS += $(NEWLIB_DIR)/newlib.c
 
-INCLUDES += -I$(PLATFORM_DIR)
+INCLUDES += -I$(BSP_DIR)
 
-LDFLAGS += -T $(PLATFORM_DIR)/memory.lds
+LDFLAGS += -T $(BSP_DIR)/memory-$(MEM).lds
 LDFLAGS += -T $(LINKER_SCRIPT)
 LDFLAGS += --specs=nano.specs
 LDFLAGS += --specs=nosys.specs
@@ -30,7 +30,7 @@ CFLAGS += -mcmodel=medany
 CFLAGS += -msmall-data-limit=8
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -Wall -Wextra -Wno-unused-parameter
-CFLAGS += -Os -ggdb
+CFLAGS += -Og -ggdb
 
 HEX = $(subst .elf,.hex,$(TARGET))
 LST = $(subst .elf,.lst,$(TARGET))

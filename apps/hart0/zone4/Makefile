@@ -2,15 +2,14 @@
 
 TARGET = zone4.elf
 
-BSP_BASE := ../bsp
-PLATFORM_DIR := $(BSP_BASE)/$(BOARD)
-NEWLIB_DIR := $(PLATFORM_DIR)/newlib
+BSP_DIR := ../bsp
+NEWLIB_DIR := $(BSP_DIR)/newlib
 
 LINKER_SCRIPT := linker.lds
 
 C_SRCS += main.c
 
-INCLUDES += -I ../
+INCLUDES += -I ../../../ext/multizone
 
 include $(NEWLIB_DIR)/newlib.mk
 

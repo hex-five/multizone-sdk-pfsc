@@ -5,11 +5,17 @@
 #############################################################
 
 BOARD ?= PFSC-LIM
-ifeq ($(filter $(BOARD), PFSC-LIM PFSC-ENVM ), $(BOARD))
+ifeq ($(BOARD), PFSC-LIM)
     ARCH := rv64
     RISCV_ARCH := $(ARCH)imac
     RISCV_ABI := lp64
-else
+    MEM := lim
+else ifeq ($(BOARD), PFSC-ENVM)
+    ARCH := rv64
+    RISCV_ARCH := $(ARCH)imac
+    RISCV_ABI := lp64
+    MEM := envm
+else    
     $(error Unsupported board $(BOARD))
 endif
 
@@ -20,6 +26,7 @@ endif
 export BOARD
 export RISCV_ARCH
 export RISCV_ABI
+export MEM
 
 #############################################################
 # Toolchain definitions
@@ -40,34 +47,33 @@ export STRIP   := $(CROSS_COMPILE)strip
 export SIZE    := $(CROSS_COMPILE)size
 
 #############################################################
-# Rules for building multizone
+# Rules for building the firmware image
 #############################################################
 
 .PHONY: all
 all: clean
-	$(MAKE) -C zone1
-	$(MAKE) -C zone2
-	$(MAKE) -C zone3
-	$(MAKE) -C zone4
-	$(MAKE) -C bsp/$(BOARD)/boot
+	$(MAKE) -C apps/hart0
+#	$(MAKE) -C apps/hart1
+#	$(MAKE) -C apps/hart2
+#	$(MAKE) -C apps/hart3
+#	$(MAKE) -C apps/hart4
 
-	java -jar multizone.jar \
-		--arch $(BOARD) \
-		--config bsp/$(BOARD)/multizone.cfg \
-		--boot bsp/$(BOARD)/boot/boot.hex \
-		zone1/zone1.hex \
-		zone2/zone2.hex \
-		zone3/zone3.hex \
-		zone4/zone4.hex
+	@srec_cat apps/hart0/hart0.hex -I \
+              -o firmware.hex -I # 2> /dev/null
+#	          apps/hart1/hart1.hex -I \
+#	          apps/hart1/hart2.hex -I \
+#	          apps/hart1/hart3.hex -I \
+#	          apps/hart1/hart4.hex -I \
+
 
 .PHONY: clean
 clean: 
-	$(MAKE) -C zone1 clean
-	$(MAKE) -C zone2 clean
-	$(MAKE) -C zone3 clean
-	$(MAKE) -C zone4 clean
-	$(MAKE) -C bsp/$(BOARD)/boot clean
-	rm -f multizone.elf multizone.hex multizone.bin bootmode0 bootmode1
+	$(MAKE) -C apps/hart0 clean
+#	$(MAKE) -C apps/hart1 clean
+#	$(MAKE) -C apps/hart2 clean
+#	$(MAKE) -C apps/hart3 clean
+#	$(MAKE) -C apps/hart4 clean
+	rm -f firmware.*
 
 #############################################################
 # Load to LIM (debug - boot mode 0)
@@ -100,7 +106,7 @@ ifeq ($(BOARD), PFSC-LIM)
     
     load:
 	$(OPENOCD_BIN) $(OPENOCDARGS) & \
-	$(GDB) multizone.hex $(GDB_LOAD_ARGS) $(GDB_LOAD_CMDS)
+	$(GDB) firmware.hex $(GDB_LOAD_ARGS) $(GDB_LOAD_CMDS)
 
 endif
 
@@ -124,12 +130,12 @@ ifeq ($(BOARD), PFSC-ENVM)
     
     load:
     # Convert multizone.hex to multizone.elf as required by mpfsBootmodeProgrammer.jar
-	$(OBJCOPY) -S -I ihex -O binary multizone.hex multizone.bin && \
-	$(LD) -b binary -r -o multizone.tmp multizone.bin && \
-	$(OBJCOPY) --rename-section .data=.text --set-section-flags .data=alloc,code,load multizone.tmp && \
-	$(LD) multizone.tmp -T bsp/PFSC-ENVM/hex2elf.ld -o multizone.elf && \
-	$(STRIP) -s multizone.elf && \
-	java -jar $(MPFS_BOOT_MODE_PROG) --bootmode 1 --die MPFS250T_ES --package FCVG484 multizone.elf && \
-	rm -rf bootmode1 multizone.tmp multizone.bin 
+	$(OBJCOPY) -S -I ihex -O binary firmware.hex firmware.bin && \
+	$(LD) -b binary -r -o firmware.tmp firmware.bin && \
+	$(OBJCOPY) --rename-section .data=.text --set-section-flags .data=alloc,code,load firmware.tmp && \
+	$(LD) firmware.tmp -T apps/hart0/bsp/hex2elf.ld -o firmware.elf && \
+	$(STRIP) -s firmware.elf && \
+	java -jar $(MPFS_BOOT_MODE_PROG) --bootmode 1 --die MPFS250T_ES --package FCVG484 firmware.elf && \
+	rm -rf bootmode1 firmware.tmp firmware.bin 
 
 endif

@@ -126,7 +126,16 @@
 		</buildTargets>
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="lim">
+			<resource resourceType="PROJECT" workspacePath="/multizone-sdk-pfsc"/>
+		</configuration>
 		<configuration configurationName="PFSC-LIM">
+			<resource resourceType="PROJECT" workspacePath="/multizone-sdk-pfsc"/>
+		</configuration>
+		<configuration configurationName="PSFC-ENVM">
+			<resource resourceType="PROJECT" workspacePath="/multizone-sdk-pfsc"/>
+		</configuration>
+		<configuration configurationName="pfsc-lim">
 			<resource resourceType="PROJECT" workspacePath="/multizone-sdk-pfsc"/>
 		</configuration>
 		<configuration configurationName="PFSC-ENVM">

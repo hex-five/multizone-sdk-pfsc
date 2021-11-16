@@ -20,7 +20,7 @@
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.537908042" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" value="riscv64-unknown-elf-" valueType="string"/>
 							<option id="cdt.managedbuild.option.gnu.cross.path.1898099507" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path" value="${RISCV}/bin" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.361158373" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder buildPath="${workspace_loc:/multizone-sdk-pfsc}/" id="cdt.managedbuild.builder.gnu.cross.323820810" keepEnvironmentInBuildfile="true" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<builder autoBuildTarget="all" buildPath="${workspace_loc:/multizone-sdk-pfsc}/" cleanBuildTarget="clean" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.builder.gnu.cross.323820810" incrementalBuildTarget="all" keepEnvironmentInBuildfile="true" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.262651274" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1939954707" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -39,7 +39,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="ext/bare-metal-lib/src/platform/hal|ext/bare-metal-lib/src/platform/drivers|ext/bare-metal-lib/examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ext/bare-metal-lib/examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -83,7 +83,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="ext/bare-metal-lib/src/platform/hal|ext/bare-metal-lib/src/platform/drivers|ext/bare-metal-lib/examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="ext/bare-metal-lib/examples" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

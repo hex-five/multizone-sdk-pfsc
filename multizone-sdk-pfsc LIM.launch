@@ -10,16 +10,16 @@
     <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.doStartGdbServer" value="true"/>
     <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.enableSemihosting" value="false"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.firstResetType" value="init"/>
-    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbClientOtherCommands" value="set $target_riscv=1&#10;set mem inaccessible-by-default off&#10;set dprintf-style gdb"/>
+    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbClientOtherCommands" value="set $target_riscv=1&#10;set mem inaccessible-by-default off&#10;set dprintf-style gdb&#10;file ${workspace_loc:/multizone-sdk-pfsc}/firmware.hex"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbClientOtherOptions" value=""/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerConnectionAddress" value=""/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerExecutable" value="${OPENOCD}/bin/openocd"/>
     <intAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerGdbPortNumber" value="3333"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerLog" value=""/>
-    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerOther" value="--command &quot;set DEVICE MPFS&quot;&#10;--file board/microsemi-riscv.cfg"/>
+    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerOther" value="--command &quot;set DEVICE MPFS; set COREID 0&quot;&#10;--file board/microsemi-riscv.cfg"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerTclPortNumber" value="6666"/>
     <intAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerTelnetPortNumber" value="4444"/>
-    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.otherInitCommands" value="add-symbol-file ${workspace_loc:/hexfive-kern}/build/PFSC-LIM/kernel.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/bsp/PFSC-LIM/boot/boot.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone1/zone1.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone2/zone2.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone3/zone3.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone4/zone4.elf"/>
+    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.otherInitCommands" value="add-symbol-file ${workspace_loc:/hexfive-kern}/build/PFSC-LIM/kernel.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/bsp/boot/boot.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone1/zone1.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone2/zone2.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone3/zone3.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone4/zone4.elf"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.otherRunCommands" value="thread apply all set $pc=_boot"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.secondResetType" value="halt"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.svdPath" value=""/>
@@ -34,7 +34,7 @@
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setPcRegister" value="false"/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setResume" value="false"/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.setStopAt" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.stopAt" value="main"/>
+    <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.stopAt" value="_boot"/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.symbolsFileName" value=""/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.symbolsOffset" value=""/>
     <booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.useFileForImage" value="true"/>
@@ -61,5 +61,5 @@
     </listAttribute>
     <stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;memoryBlockExpressionList context=&quot;Context string&quot;/&gt;&#10;"/>
     <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
-    <stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value="20000000,0x20000000,0x80015d8,0x8001c80,0x8000000,0x1000a00,0x1000000,0x0C000000,0x0C002000,0x8000048,0x8000400,0x8000448,0x800000,0x8006800,0x800D800"/>
+    <stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value="0x80015d8,0x8001c80,0x8000000,0x1000a00,0x1000000,0x0C000000,0x0C002000,0x8000048,0x8000400,0x8000448,0x800000,0x8006800,0x800D800,8102000,0x08102000"/>
 </launchConfiguration>

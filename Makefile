@@ -92,15 +92,15 @@ ifeq ($(BOARD), PFSC-LIM)
     
     GDB_PORT ?= 3333
     GDB_LOAD_ARGS ?= --batch
-    GDB_LOAD_CMDS += -ex "set $target_riscv=1"
-    GDB_LOAD_CMDS += -ex "set arch riscv:$(ARCH)"
-    GDB_LOAD_CMDS += -ex "set mem inaccessible-by-default off"
-    GDB_LOAD_CMDS += -ex "target extended-remote localhost:$(GDB_PORT)"
-    GDB_LOAD_CMDS += -ex "monitor reset init"
-    GDB_LOAD_CMDS += -ex "load"
-    GDB_LOAD_CMDS += -ex "monitor resume"
-    GDB_LOAD_CMDS += -ex "monitor shutdown"
-    GDB_LOAD_CMDS += -ex "quit"
+    GDB_LOAD_CMDS += -ex 'set $$target_riscv=1'
+    GDB_LOAD_CMDS += -ex 'set arch riscv:$(ARCH)'
+    GDB_LOAD_CMDS += -ex 'set mem inaccessible-by-default off'
+    GDB_LOAD_CMDS += -ex 'target extended-remote localhost:$(GDB_PORT)'
+    GDB_LOAD_CMDS += -ex 'monitor reset init'
+    GDB_LOAD_CMDS += -ex 'load'
+    GDB_LOAD_CMDS += -ex 'monitor resume'
+    GDB_LOAD_CMDS += -ex 'monitor shutdown'
+    GDB_LOAD_CMDS += -ex 'quit'
     
     .PHONY: load
     
@@ -129,13 +129,13 @@ ifeq ($(BOARD), PFSC-ENVM)
     .PHONY: load
     
     load:
-    # Convert multizone.hex to multizone.elf as required by mpfsBootmodeProgrammer.jar
-	$(OBJCOPY) -S -I ihex -O binary firmware.hex firmware.bin && \
-	$(LD) -b binary -r -o firmware.tmp firmware.bin && \
-	$(OBJCOPY) --rename-section .data=.text --set-section-flags .data=alloc,code,load firmware.tmp && \
-	$(LD) firmware.tmp -T apps/hart0/bsp/hex2elf.ld -o firmware.elf && \
-	$(STRIP) -s firmware.elf && \
-	java -jar $(MPFS_BOOT_MODE_PROG) --bootmode 1 --die MPFS250T_ES --package FCVG484 firmware.elf && \
+    # Convert firmware.hex to multizone.elf as required by mpfsBootmodeProgrammer.jar
+	$(OBJCOPY) -S -I ihex -O binary firmware.hex firmware.bin
+	$(LD) -b binary -r -o firmware.tmp firmware.bin
+	$(OBJCOPY) --rename-section .data=.text --set-section-flags .data=alloc,code,load firmware.tmp
+	$(LD) firmware.tmp -T apps/hart0/bsp/hex2elf.ld -o firmware.elf
+	$(STRIP) -s firmware.elf
+	java -jar $(MPFS_BOOT_MODE_PROG) --bootmode 1 --die MPFS250T_ES --package FCVG484 firmware.elf
 	rm -rf bootmode1 firmware.tmp firmware.bin 
 
 endif

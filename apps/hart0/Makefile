@@ -6,11 +6,11 @@
 
 .PHONY: all
 all: clean
+	$(MAKE) -C bsp/boot
 	$(MAKE) -C zone1
 	$(MAKE) -C zone2
 	$(MAKE) -C zone3
 	$(MAKE) -C zone4
-	$(MAKE) -C bsp/boot
 
 	java -jar ../../ext/multizone/multizone.jar \
 		--arch $(BOARD) \
@@ -23,10 +23,10 @@ all: clean
 		zone4/zone4.hex
 
 .PHONY: clean
-clean: 
+clean:
+	$(MAKE) -C bsp/boot clean
 	$(MAKE) -C zone1 clean
 	$(MAKE) -C zone2 clean
 	$(MAKE) -C zone3 clean
 	$(MAKE) -C zone4 clean
-	$(MAKE) -C bsp/boot clean
 	rm -f hart0.*

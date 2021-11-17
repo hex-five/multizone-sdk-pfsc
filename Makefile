@@ -58,13 +58,12 @@ all: clean
 #	$(MAKE) -C apps/hart3
 #	$(MAKE) -C apps/hart4
 
-	@srec_cat apps/hart0/hart0.hex -I \
-              -o firmware.hex -I # 2> /dev/null
-#	          apps/hart1/hart1.hex -I \
-#	          apps/hart1/hart2.hex -I \
-#	          apps/hart1/hart3.hex -I \
-#	          apps/hart1/hart4.hex -I \
-
+	@srec_cat -o firmware.hex -I \
+         apps/hart0/hart0.hex -I 2> /dev/null
+#        apps/hart1/hart1.hex -I \
+#        apps/hart2/hart2.hex -I \
+#        apps/hart3/hart3.hex -I \
+#        apps/hart4/hart4.hex -I \
 
 .PHONY: clean
 clean: 
@@ -87,17 +86,15 @@ ifeq ($(BOARD), PFSC-LIM)
     
     OPENOCD_BIN := $(abspath $(OPENOCD))/bin/openocd
     
-    OPENOCDARGS += --command "set DEVICE MPFS"
-    OPENOCDARGS += --file $(abspath $(OPENOCD))/share/openocd/scripts/board/microsemi-riscv.cfg
+    OPENOCDARGS += --command 'set DEVICE MPFS'
+    OPENOCDARGS += --file '$(abspath $(OPENOCD))/share/openocd/scripts/board/microsemi-riscv.cfg'
     
     GDB_PORT ?= 3333
-    GDB_LOAD_ARGS ?= --batch
-    GDB_LOAD_CMDS += -ex 'set $$target_riscv=1'
-    GDB_LOAD_CMDS += -ex 'set arch riscv:$(ARCH)'
-    GDB_LOAD_CMDS += -ex 'set mem inaccessible-by-default off'
+    GDB_LOAD_ARGS ?= -batch
     GDB_LOAD_CMDS += -ex 'target extended-remote localhost:$(GDB_PORT)'
-    GDB_LOAD_CMDS += -ex 'monitor reset init'
+    GDB_LOAD_CMDS += -ex 'monitor reset halt'
     GDB_LOAD_CMDS += -ex 'load'
+    GDB_LOAD_CMDS += -ex 'thread apply all set $$pc=0x08010100'
     GDB_LOAD_CMDS += -ex 'monitor resume'
     GDB_LOAD_CMDS += -ex 'monitor shutdown'
     GDB_LOAD_CMDS += -ex 'quit'

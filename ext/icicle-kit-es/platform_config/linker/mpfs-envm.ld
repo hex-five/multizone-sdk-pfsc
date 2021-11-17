@@ -97,10 +97,10 @@ MEMORY
     /* eNVM can be made into 128K section or split as required */
     /* In this example, our reset vector is set to point to the */
     /* start of SEC2 at  0x20220000. */
-    eNVM_SEC_2_0_1_3 (rx) : ORIGIN  = 0x20220000+8K, LENGTH = 60K 
-    ram_LIM (rwx) : ORIGIN  = 0x08000000, LENGTH = 3696+4K+16K+4*4K
+    eNVM_SEC_2_0_1_3 (rx) : ORIGIN  = 0x2022C000, LENGTH = 24K 
+    ram_LIM (rwx) : ORIGIN  = 0x08004000, LENGTH = 48K
     ram_dtm (rwx) : ORIGIN  = 0x01000000, LENGTH = 7k       /* DTIM */
-    scratchpad(rwx):  ORIGIN = 0x0A000000, LENGTH = 512k
+    scratchpad(rwx): ORIGIN = 0x0A000000, LENGTH = 512k
     /* This 1K of DTIM is used to run code when switching the eNVM clock */
     switch_code_dtm (rx) : ORIGIN = 0x01001c00, LENGTH = 1k 
     /* DDR sections example */
@@ -112,7 +112,7 @@ MEMORY
     ddr_wcb_64 (rwx) : ORIGIN  = 0x1800000000 + 30M , LENGTH  = 2M
 }
                                
-HEAP_SIZE           = 4k;   /* needs to be calculated for your application */
+HEAP_SIZE = 4k;   /* needs to be calculated for your application */
 
 /* STACK_SIZE_PER_HART needs to be calculated for your */
 /* application. Must be aligned */
@@ -126,18 +126,18 @@ HEAP_SIZE           = 4k;   /* needs to be calculated for your application */
 /* TLS hart 1   */
 /* etc */
 /* note: HLS_DEBUG_AREA_SIZE is defined in mss_sw_config.h */
-STACK_SIZE_PER_HART = 4k;                     
+STACK_SIZE_PER_HART = 1k;                     
 
 /*
  * Stack size for each hart's application.
  * These are the stack sizes that will be allocated to each hart before starting
  * each hart's application function, e51(), u54_1(), u54_2(), u54_3(), u54_4().
  */
-STACK_SIZE_E51_APPLICATION   = 16k;
-STACK_SIZE_U54_1_APPLICATION =  4k;
-STACK_SIZE_U54_2_APPLICATION =  4k;
-STACK_SIZE_U54_3_APPLICATION =  4k;
-STACK_SIZE_U54_4_APPLICATION =  4k;
+STACK_SIZE_E51_APPLICATION   = 4k;
+STACK_SIZE_U54_1_APPLICATION = 4k;
+STACK_SIZE_U54_2_APPLICATION = 4k;
+STACK_SIZE_U54_3_APPLICATION = 4k;
+STACK_SIZE_U54_4_APPLICATION = 4k;
 
 SECTIONS
 {
@@ -235,6 +235,55 @@ SECTIONS
         __ddr_end = .;
     } >ddr_cached_32 AT>eNVM_SEC_2_0_1_3
 
+  /* ----------------------------------------------------------------------- */
+   
+    /* must be on 4k boundary (0x1000) - corresponds to page size, when using 
+       memory mem */
+    /* protection */
+    /* .stack : ALIGN(0x1000) */
+    .stack : ALIGN(0x10)
+    {
+        PROVIDE(__stack_bottom_h0$ = .);
+        PROVIDE(__app_stack_bottom_h0 = .);
+        . += STACK_SIZE_E51_APPLICATION;
+        PROVIDE(__app_stack_top_h0 = .);
+        PROVIDE(__stack_top_h0$ = .);
+    
+        PROVIDE(__stack_bottom_h1$ = .);
+        PROVIDE(__app_stack_bottom_h1$ = .);
+        . += STACK_SIZE_U54_1_APPLICATION;
+        PROVIDE(__app_stack_top_h1 = .);
+        PROVIDE(__stack_top_h1$ = .);
+    
+        PROVIDE(__stack_bottom_h2$ = .);
+        PROVIDE(__app_stack_bottom_h2 = .);
+        . += STACK_SIZE_U54_2_APPLICATION;
+        PROVIDE(__app_stack_top_h2 = .);
+        PROVIDE(__stack_top_h2$ = .);
+    
+        PROVIDE(__stack_bottom_h3$ = .);
+        PROVIDE(__app_stack_bottom_h3 = .);
+        . += STACK_SIZE_U54_3_APPLICATION;
+        PROVIDE(__app_stack_top_h3 = .);
+        PROVIDE(__stack_top_h3$ = .);
+    
+        PROVIDE(__stack_bottom_h4$ = .);
+        PROVIDE(__app_stack_bottom_h4 = .);
+        . += STACK_SIZE_U54_4_APPLICATION;
+        PROVIDE(__app_stack_top_h4 = .);
+        PROVIDE(__stack_top_h4$ = .);
+
+    } > ram_LIM
+
+    .heap : ALIGN(0x10)
+    {
+        __heap_start = .;
+        . += HEAP_SIZE;
+        __heap_end = .;
+        . = ALIGN(0x10);
+        _heap_end = __heap_end;
+    } > ram_LIM
+
     /* short/global data section */
     .sdata : ALIGN(0x10)
     {
@@ -285,51 +334,6 @@ SECTIONS
 
     /* End of uninitialized data segment */
     _end = .;
-  
-    .heap : ALIGN(0x10)
-    {
-        __heap_start = .;
-        . += HEAP_SIZE;
-        __heap_end = .;
-        . = ALIGN(0x10);
-        _heap_end = __heap_end;
-    } > ram_LIM
-   
-    /* must be on 4k boundary (0x1000) - corresponds to page size, when using 
-       memory mem */
-    /* protection */
-    /* .stack : ALIGN(0x1000) */
-    .stack : ALIGN(0x10)
-    {
-        PROVIDE(__stack_bottom_h0$ = .);
-        PROVIDE(__app_stack_bottom_h0 = .);
-        . += STACK_SIZE_E51_APPLICATION;
-        PROVIDE(__app_stack_top_h0 = .);
-        PROVIDE(__stack_top_h0$ = .);
-    
-        PROVIDE(__stack_bottom_h1$ = .);
-        PROVIDE(__app_stack_bottom_h1$ = .);
-        . += STACK_SIZE_U54_1_APPLICATION;
-        PROVIDE(__app_stack_top_h1 = .);
-        PROVIDE(__stack_top_h1$ = .);
-    
-        PROVIDE(__stack_bottom_h2$ = .);
-        PROVIDE(__app_stack_bottom_h2 = .);
-        . += STACK_SIZE_U54_2_APPLICATION;
-        PROVIDE(__app_stack_top_h2 = .);
-        PROVIDE(__stack_top_h2$ = .);
-    
-        PROVIDE(__stack_bottom_h3$ = .);
-        PROVIDE(__app_stack_bottom_h3 = .);
-        . += STACK_SIZE_U54_3_APPLICATION;
-        PROVIDE(__app_stack_top_h3 = .);
-        PROVIDE(__stack_top_h3$ = .);
-    
-        PROVIDE(__stack_bottom_h4$ = .);
-        PROVIDE(__app_stack_bottom_h4 = .);
-        . += STACK_SIZE_U54_4_APPLICATION;
-        PROVIDE(__app_stack_top_h4 = .);
-        PROVIDE(__stack_top_h4$ = .);
-    } > ram_LIM
+
 }
 

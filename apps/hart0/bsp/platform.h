@@ -8,6 +8,10 @@
 #define RTC_FREQ	   1000000 //   1MHz
 #define APB_AHB_FREQ 150012500 // 150MHz (UART)
 
+#define PMP 16
+#define IPC_RECV    0x01000A00 /* MultiZone TEE < AMP */
+#define IPC_SEND    0x01000A80 /* MultiZone TEE > AMP */
+
 // -----------------------------------------------------------------------------
 // RTC (CLIC)
 // -----------------------------------------------------------------------------

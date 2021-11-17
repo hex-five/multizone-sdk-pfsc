@@ -11,16 +11,3 @@ index 9e049de..e07ae56 100644
      csrw mcause, zero
      csrw mepc, zero
      /*
-diff --git a/src/platform/mpfs_hal/startup_gcc/system_startup.c b/src/platform/mpfs_hal/startup_gcc/system_startup.c
-index accd9ea..6bad203 100644
---- a/src/platform/mpfs_hal/startup_gcc/system_startup.c
-+++ b/src/platform/mpfs_hal/startup_gcc/system_startup.c
-@@ -456,7 +456,7 @@ __attribute__((weak)) uint8_t init_mem_protection_unit(void)
-  */
- __attribute__((weak)) uint8_t init_pmp(uint8_t hart_id)
- {
--    pmp_configure(hart_id);
-+  //pmp_configure(hart_id);
-     return (0U);
- }
- 

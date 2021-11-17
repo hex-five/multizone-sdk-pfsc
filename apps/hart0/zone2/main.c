@@ -5,7 +5,16 @@
 #include "platform.h"
 #include "multizone.h"
 
-static volatile char msg[16] = {'\0'};
+typedef enum {zone0, zone1, zone2, zone3, zone4} Zone;
+
+static volatile char inbox[1+4][16] = { {'\0'}, {'\0'}, {'\0'}, {'\0'}, {'\0'} };
+int inbox_empty(void){
+    return (inbox[0][0]=='\0' &&
+            inbox[1][0]=='\0' &&
+            inbox[2][0]=='\0' &&
+            inbox[3][0]=='\0' &&
+            inbox[4][0]=='\0');
+}
 
 // ------------------------------------------------------------------------
 static void (*trap_vect[__riscv_xlen])(void) = {};
@@ -29,10 +38,11 @@ __attribute__((interrupt())) void trp_handler(void)	 { // trap handler (0)
 }
 __attribute__((interrupt())) void msi_handler(void)  { // machine software interrupt (3)
 
-	char const tmp[16];
-
-	if (MZONE_RECV(1, tmp))
-		memcpy((char *)msg, tmp, sizeof msg);
+    for (Zone zone = zone0; zone <= zone4; zone++) {
+        char msg[16];
+        if (MZONE_RECV(zone, msg))
+            memcpy((char*) &inbox[zone][0], msg, sizeof inbox[0]);
+    }
 
 }
 __attribute__((interrupt())) void tmr_handler(void)  { // machine timer interrupt (7)
@@ -130,22 +140,28 @@ int main (void){
         // Message handler
         CSRC(mie, 1 << 3);
 
-        if (msg[0] != '\0') {
+        for (Zone zone = zone0; zone <= zone4; zone++) {
 
-            if (strncmp("ping", (char*) msg, sizeof msg[0]) == 0)
-                MZONE_SEND(1, (char[16]){"pong"});
-            else if (strcmp("mie=0", (char*) msg) == 0)
-                CSRC(mstatus, 1 << 3);
-            else if (strcmp("mie=1", (char*) msg) == 0)
-                CSRS(mstatus, 1 << 3);
-            else if (strcmp("block", (char*) msg) == 0) {
-                CSRC(mstatus, 1 << 3);
-                for (;;)
-                    ;
-            } else
-                MZONE_SEND(1, msg);
+            char * const msg = (char *)inbox[zone];
 
-            msg[0] = '\0';
+            if (msg[0] != '\0') {
+
+                if (strncmp("ping", (char*) msg, sizeof msg[0]) == 0)
+                    MZONE_SEND(zone, (char[16]){"pong"});
+                else if (strcmp("mie=0", (char*) msg) == 0)
+                    CSRC(mstatus, 1 << 3);
+                else if (strcmp("mie=1", (char*) msg) == 0)
+                    CSRS(mstatus, 1 << 3);
+                else if (strcmp("block", (char*) msg) == 0) {
+                    CSRC(mstatus, 1 << 3);
+                    for (;;)
+                        ;
+                } else
+                    MZONE_SEND(zone, msg);
+
+                msg[0] = '\0';
+
+            }
 
         }
 

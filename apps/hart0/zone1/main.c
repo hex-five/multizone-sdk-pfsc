@@ -3,7 +3,7 @@
 #include <fcntl.h>	// open()
 #include <unistd.h> // read() write()
 #include <string.h>	// strxxx()
-#include "printf.h"     //#include <stdio.h>    // printf() sprintf()
+#include "printf.h" // #include <stdio.h>    // printf() sprintf()
 #include <stdlib.h> // qsort() strtoul()
 #include <limits.h> // UINT_MAX ULONG_MAX
 
@@ -12,7 +12,7 @@
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-typedef enum {zone1=1, zone2, zone3, zone4} Zone;
+typedef enum {zone0, zone1, zone2, zone3, zone4} Zone;
 
 #define BUFFER_SIZE 32
 static volatile struct{
@@ -26,9 +26,13 @@ int buffer_empty(void){
 
 static char inputline[BUFFER_SIZE+1]="";
 
-static volatile char inbox[4][16] = { {'\0'}, {'\0'}, {'\0'}, {'\0'} };
+static volatile char inbox[1+4][16] = { {'\0'}, {'\0'}, {'\0'}, {'\0'}, {'\0'} };
 int inbox_empty(void){
-	return (inbox[0][0]=='\0' && inbox[1][0]=='\0' && inbox[2][0]=='\0' && inbox[3][0]=='\0');
+	return (inbox[0][0]=='\0' &&
+	        inbox[1][0]=='\0' &&
+	        inbox[2][0]=='\0' &&
+            inbox[3][0]=='\0' &&
+	        inbox[4][0]=='\0');
 }
 
 // ------------------------------------------------------------------------
@@ -88,10 +92,10 @@ __attribute__((interrupt())) void trp_isr(void)  { // nmi traps (0)
 
 }
 __attribute__((interrupt())) void msi_isr(void)  { // msip/inbox (3)
-    for (Zone zone = zone1; zone <= zone4; zone++) {
+    for (Zone zone = zone0; zone <= zone4; zone++) {
         char msg[16];
         if (MZONE_RECV(zone, msg))
-            memcpy((char*) &inbox[zone-1][0], msg, sizeof inbox[0]);
+            memcpy((char*) &inbox[zone][0], msg, sizeof inbox[0]);
     }
 
 }
@@ -293,59 +297,83 @@ void print_pmp(void){
 	#define PMP_W 1<<1
 	#define PMP_X 1<<2
 
-	uint64_t pmpcfg=0x0;
-#if __riscv_xlen==32
-	uint32_t pmpcfg0; asm ( "csrr %0, pmpcfg0" : "=r"(pmpcfg0) );
-	uint32_t pmpcfg1; asm ( "csrr %0, pmpcfg1" : "=r"(pmpcfg1) );
-	pmpcfg = pmpcfg1;
-	pmpcfg <<= 32;
-	pmpcfg |= pmpcfg0;
-#else
-	asm ( "csrr %0, pmpcfg0" : "=r"(pmpcfg) );
+    unsigned long pmpcfg0; asm ( "csrr %0, pmpcfg0" : "=r"(pmpcfg0) );
+#if PMP>4 && __riscv_xlen==32
+    unsigned long pmpcfg1; asm ( "csrr %0, pmpcfg1" : "=r"(pmpcfg1) );
+#endif
+#if PMP>8
+    unsigned long pmpcfg2; asm ( "csrr %0, pmpcfg2" : "=r"(pmpcfg2) );
+#endif
+#if PMP>8 && __riscv_xlen==32
+    unsigned long pmpcfg3; asm ( "csrr %0, pmpcfg3" : "=r"(pmpcfg3) );
 #endif
 
-	unsigned long pmpaddr[8];
+	unsigned long pmpaddr[PMP];
 	asm ( "csrr %0, pmpaddr0" : "=r"(pmpaddr[0]) );
 	asm ( "csrr %0, pmpaddr1" : "=r"(pmpaddr[1]) );
 	asm ( "csrr %0, pmpaddr2" : "=r"(pmpaddr[2]) );
 	asm ( "csrr %0, pmpaddr3" : "=r"(pmpaddr[3]) );
+#if PMP > 4
 	asm ( "csrr %0, pmpaddr4" : "=r"(pmpaddr[4]) );
 	asm ( "csrr %0, pmpaddr5" : "=r"(pmpaddr[5]) );
 	asm ( "csrr %0, pmpaddr6" : "=r"(pmpaddr[6]) );
 	asm ( "csrr %0, pmpaddr7" : "=r"(pmpaddr[7]) );
+#endif
+#if PMP > 8
+    asm ( "csrr %0, pmpaddr8" : "=r"(pmpaddr[8]) );
+    asm ( "csrr %0, pmpaddr9" : "=r"(pmpaddr[9]) );
+    asm ( "csrr %0, pmpaddr10" : "=r"(pmpaddr[10]) );
+    asm ( "csrr %0, pmpaddr11" : "=r"(pmpaddr[11]) );
+    asm ( "csrr %0, pmpaddr12" : "=r"(pmpaddr[12]) );
+    asm ( "csrr %0, pmpaddr13" : "=r"(pmpaddr[13]) );
+    asm ( "csrr %0, pmpaddr14" : "=r"(pmpaddr[14]) );
+    asm ( "csrr %0, pmpaddr15" : "=r"(pmpaddr[15]) );
+#endif
 
-	for (int i=0; i<8; i++){
+    for (int i=0; i<PMP; i++){
 
-		const uint8_t cfg = (pmpcfg >> 8*i); if (cfg==0x0) continue;
+    #if __riscv_xlen==32
+        const uint8_t cfg = (i< 4 ? pmpcfg0 :
+                             i< 8 ? pmpcfg1 :
+                             i<12 ? pmpcfg2 :
+                                    pmpcfg3  ) >> (8*(i%4));
+    #else
+		const uint8_t cfg = (i<8 ? pmpcfg0 : pmpcfg2) >> (8*(i%8));
+    #endif
 
 		char rwx[3+1] = {cfg & PMP_R ? 'r':'-', cfg & PMP_W ? 'w':'-', cfg & PMP_X ? 'x':'-', '\0'};
-
 		unsigned long start=0, end=0;
-
 		char type[5+1]="";
 
-		if ( (cfg & (TOR | NA4 | NAPOT)) == TOR){
+		switch (cfg & (TOR | NA4 | NAPOT)){
+
+		case TOR :
 			start = pmpaddr[i-1]<<2;
 			end =  (pmpaddr[i]<<2) -1;
 			strcpy(type, "TOR");
+			break;
 
-		} else if ( (cfg & (TOR | NA4 | NAPOT)) == NA4){
+		case NA4 :
 			start = pmpaddr[i]<<2;
 			end =  start+4 -1;
 			strcpy(type, "NA4");
+			break;
 
-		} else if ( (cfg & (TOR | NA4 | NAPOT)) == NAPOT){
+		case NAPOT:
 			for (int j=0; j<__riscv_xlen; j++){
-				if ( ((pmpaddr[i] >> j) & 0x1) == 0){
-					const uint64_t size = 1 << (3+j);
+				if ( ((pmpaddr[i] >> j) & 1UL) == 0){
+					const unsigned long size = 1UL << (3+j);
 					start = (pmpaddr[i] >>j) <<(j+2);
 					end = start + size -1;
 					strcpy(type, "NAPOT");
 					break;
 				}
 			}
+		    break;
 
-		} else break;
+		default : continue;
+
+		}
 
 		printf("0x%08x 0x%08x %s %s \n", (unsigned)start, (unsigned)end, rwx, type);
 
@@ -358,21 +386,23 @@ void msg_handler() {
 
     CSRC(mie, 1 << 3);
 
-    for (Zone zone = zone1; zone <= zone4; zone++) {
+    for (Zone zone = zone0; zone <= zone4; zone++) {
 
-        char * const msg = (char *)inbox[zone-1];
+        char * const msg = (char *)inbox[zone];
 
         if (*msg != '\0') {
 
             if (strcmp("ping", msg) == 0) {
-                MZONE_SEND(zone, msg);
+                MZONE_SEND(zone, (char[16]){"pong"});
 
             } else {
+
                 write(1, "\e7\e[2K", 6);   // save curs pos & clear entire line
                 printf("\rZ%d > %.16s\n", zone, msg);
                 write(1, "\nZ1 > ", 6);
                 write(1, inputline, strlen(inputline));
                 write(1, "\e8\e[2B", 6);   // restore curs pos & curs down 2x
+
             }
 
             *msg = '\0';
@@ -442,22 +472,22 @@ void cmd_handler(){
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "send")==0){
 	// --------------------------------------------------------------------
-		if (tk[1] != NULL && tk[1][0]>='1' && tk[1][0]<='4' && tk[2] != NULL){
+		if (tk[1] != NULL && tk[1][0]>='0' && tk[1][0]<='4' && tk[2] != NULL){
 			char msg[16]; strncpy(msg, tk[2], (sizeof msg)-1);
 			if (!MZONE_SEND( tk[1][0]-'0', msg) )
 				printf("Error: Inbox full.\n");
-		} else printf("Syntax: send {1|2|3|4} message \n");
+		} else printf("Syntax: send {0|1|2|3|4} message \n");
 
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "recv")==0){
 	// --------------------------------------------------------------------
-		if (tk[1] != NULL && tk[1][0]>='1' && tk[1][0]<='4'){
+		if (tk[1] != NULL && tk[1][0]>='0' && tk[1][0]<='4'){
 			char msg[16];
 			if (MZONE_RECV(tk[1][0]-'0', msg))
 				printf("msg : %.16s\n", msg);
 			else
 				printf("Error: Inbox empty.\n");
-		} else printf("Syntax: recv {1|2|3|4} \n");
+		} else printf("Syntax: recv {0|1|2|3|4} \n");
 
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "yield")==0){

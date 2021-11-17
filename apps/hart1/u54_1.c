@@ -23,30 +23,7 @@ void u54_1(void) {
 
 	__enable_irq();
 
-	mss_uart_instance_t *uart = &g_mss_uart1_lo;
-
-	MSS_UART_init(uart, MSS_UART_115200_BAUD, MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
-
-	MSS_UART_polled_tx_string (uart, "H1> ");
-
-	while (1) {
-
-		uint8_t rx_buff[1];
-
-		uint8_t rx_size = MSS_UART_get_rx(uart, rx_buff, sizeof(rx_buff));
-
-		if (rx_size > 0) {
-			MSS_UART_polled_tx_string(uart, rx_buff);
-		}
-
-	}
+	extern void main(void);	main();
 
 } // u54_1()
 
-
-/* HART1 Software interrupt handler */
-static volatile uint32_t count_sw_ints_h1 = 0U;
-void Software_h1_IRQHandler(void){
-	uint64_t hart_id = read_csr(mhartid);
-	count_sw_ints_h1++;
-}

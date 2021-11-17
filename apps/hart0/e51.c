@@ -1,32 +1,39 @@
-/* Copyright(C) 2020 Hex Five Security, Inc. - All Rights Reserved */
-
-#include <stdio.h>
-#include <string.h>
+/* Copyright(C) 2021 Hex Five Security, Inc. - All Rights Reserved */
 
 #include "mpfs_hal/mss_hal.h"
-#include "drivers/mss_mmuart/mss_uart.h"
 
 void e51(void) {
 
-	/* Turn on clocks */
-	SYSREG->SUBBLK_CLOCK_CR |= SUBBLK_CLOCK_CR_MMUART1_MASK;
-	SYSREG->SUBBLK_CLOCK_CR |= SUBBLK_CLOCK_CR_MMUART2_MASK;
+	/* Enable UARTs */
+	SYSREG->SUBBLK_CLOCK_CR |=  SUBBLK_CLOCK_CR_MMUART0_MASK |
+                                SUBBLK_CLOCK_CR_MMUART1_MASK |
+                                SUBBLK_CLOCK_CR_MMUART2_MASK |
+                                SUBBLK_CLOCK_CR_MMUART3_MASK |
+                                SUBBLK_CLOCK_CR_MMUART4_MASK ;
+	SYSREG->SOFT_RESET_CR   &=~(SUBBLK_CLOCK_CR_MMUART0_MASK |
+                                SUBBLK_CLOCK_CR_MMUART1_MASK |
+                                SUBBLK_CLOCK_CR_MMUART2_MASK |
+                                SUBBLK_CLOCK_CR_MMUART3_MASK |
+                                SUBBLK_CLOCK_CR_MMUART4_MASK);
 
-	/* Remove soft reset */
-	SYSREG->SOFT_RESET_CR &= ~SUBBLK_CLOCK_CR_MMUART1_MASK;
-	SYSREG->SOFT_RESET_CR &= ~SUBBLK_CLOCK_CR_MMUART2_MASK;
+    /* Enable GPIO2 */
+    SYSREG->SUBBLK_CLOCK_CR |= SUBBLK_CLOCK_CR_GPIO2_MASK;
+    SYSREG->SOFT_RESET_CR &= ~SUBBLK_CLOCK_CR_GPIO2_MASK;
 
-	/* Resume other harts */
-	raise_soft_interrupt(1);
-	raise_soft_interrupt(2);
+    /* GPIO interrupt mutex */
+    SYSREG->GPIO_INTERRUPT_FAB_CR |= (1 << 30); // SW2
+    SYSREG->GPIO_INTERRUPT_FAB_CR |= (1 << 31); // SW3
 
-	while(1){;}
+    /* Enable PLIC */
+    PLIC_SetPriority_Threshold(0);
 
-} // e51()
+    /* Release U54 hart1,2,3,4 */
+    raise_soft_interrupt(1);
+    raise_soft_interrupt(2);
+    raise_soft_interrupt(3);
+    raise_soft_interrupt(4);
 
-/* HART0 Software interrupt handler */
-static volatile uint32_t count_sw_ints_h0 = 0U;
-void Software_h0_IRQHandler(void){
-	uint64_t hart_id = read_csr(mhartid);
-	count_sw_ints_h0++;
+    /* Boot MultiZone TEE */
+    asm("csrr t0, mscratch; csrw mtvec, t0; ecall");
+
 }

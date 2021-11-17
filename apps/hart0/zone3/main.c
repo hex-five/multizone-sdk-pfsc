@@ -3,6 +3,8 @@
 #include <string.h>
 #include "multizone.h"
 
+typedef enum {zone0, zone1, zone2, zone3, zone4} Zone;
+
 __attribute__(( interrupt())) void trap_handler(void){
 
     for( ;; );
@@ -22,18 +24,23 @@ int main (void){
     while (1) {
 
         // Message handler
-        char msg[16];
-        if (MZONE_RECV(1, msg)) {
-            if (strcmp("ping", msg) == 0)
-                MZONE_SEND(1, (char[16]){"pong"});
-            else if (strcmp("block", msg) == 0)
-                for( ;; );
-            else if (strcmp("mie=0", msg)==0)
-                CSRC(mstatus, 1<<3);
-            else if (strcmp("mie=1", msg)==0)
-                CSRS(mstatus, 1<<3);
-            else
-                MZONE_SEND(1, msg);
+        for (Zone zone = zone0; zone <= zone4; zone++) {
+
+            char msg[16]="";
+
+            if (MZONE_RECV(zone, msg)) {
+                if (strcmp("ping", msg) == 0)
+                    MZONE_SEND(zone, (char[16]){"pong"});
+                else if (strcmp("block", msg) == 0)
+                    for( ;; );
+                else if (strcmp("mie=0", msg)==0)
+                    CSRC(mstatus, 1<<3);
+                else if (strcmp("mie=1", msg)==0)
+                    CSRS(mstatus, 1<<3);
+                else
+                    MZONE_SEND(zone, msg);
+            }
+
         }
 
         // Suspend waiting for incoming msg

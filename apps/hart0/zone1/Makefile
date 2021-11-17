@@ -5,7 +5,7 @@ TARGET = zone1.elf
 BSP_DIR := ../bsp
 NEWLIB_DIR := $(BSP_DIR)/newlib
 
-LINKER_SCRIPT := ./linker.lds
+LINKER_SCRIPT := linker.lds
 
 C_SRCS += main.c printf.c strtok.c
 

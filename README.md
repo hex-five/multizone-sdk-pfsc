@@ -99,6 +99,29 @@ Z1 > Commands: yield send recv pmp load store exec stats timer restart dma
 - press SW2 to toggle LED4 (yellow)
 - press SW3 to toggle LED3 (yellow)
 
+On your computer, start a new serial terminal console (GtkTerm) and connect to /dev/ttyUSB1 at 115200-8-N-1
+
+Hit the enter key a few times until the cursor 'H1 >' appears on the screen
+
+Hit enter again to show the list of available commands
+
+```
+=====================================================================
+      	             Hex Five MultiZone® Security                    
+    Copyright© 2020 Hex Five Security, Inc. - All Rights Reserved    
+=====================================================================
+This version of MultiZone® Security is meant for evaluation purposes 
+only. As such, use of this software is governed by the Evaluation    
+License. There may be other functional limitations as described in   
+the evaluation SDK documentation. The commercial version of the      
+software does not have these restrictions.                           
+=====================================================================
+
+H1 > Commands: load store exec send recv pmp
+```
+- verify separation policies (commands pmp, load, store, exec)
+- exchange IPC messages (ping) across TEE zones and app cluster (send/recv)
+
 
 ### Optional: Eclipse CDT Project ###
 This repository includes an optional Eclipse CDT project for developers familiar with this IDE. No additional plugins are required to build and upload MultiZone to the target. The [OpenOCD debugging plug-in](https://eclipse-embed-cdt.github.io/debug/openocd) is optional and recommended.
@@ -115,7 +138,7 @@ Project > Properties > C/C++ Build > Environment: set variables according to you
 | |
 |---|
 | Up to 4 hardware threads (zones) hardware-enforced, software-defined                  |
-| Up to 8 memory mapped resources per zone – i.e. flash, ram, rom, i/o, etc.            |
+| Up to 16 memory mapped resources per zone – i.e. flash, ram, rom, i/o, etc.           |
 | Scheduler: preemptive, cooperative, round robin, configurable tick or tickless        |
 | Secure interzone communications based on messages – no shared memory                  |
 | Built-in support for secure shared Timer interrupt                                    |
@@ -148,5 +171,3 @@ Please remember that export/import and/or use of strong cryptography software, p
 _MultiZone and HEX-Five are registered trademarks of Hex Five Security, Inc._
 
 _MultiZone technology is protected by patents US 11,151,262 and PCT/US2019/038774_
-
-

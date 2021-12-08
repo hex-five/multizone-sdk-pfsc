@@ -156,8 +156,7 @@ int main (void){
                     CSRC(mstatus, 1 << 3);
                     for (;;)
                         ;
-                } else
-                    MZONE_SEND(zone, msg);
+                } //else MZONE_SEND(zone, msg);
 
                 msg[0] = '\0';
 

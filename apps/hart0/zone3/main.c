@@ -37,8 +37,7 @@ int main (void){
                     CSRC(mstatus, 1<<3);
                 else if (strcmp("mie=1", msg)==0)
                     CSRS(mstatus, 1<<3);
-                else
-                    MZONE_SEND(zone, msg);
+                //else MZONE_SEND(zone, msg);
             }
 
         }

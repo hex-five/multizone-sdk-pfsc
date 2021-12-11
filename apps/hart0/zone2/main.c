@@ -67,6 +67,7 @@ __attribute__((interrupt())) void plic_handler(void) { // plic interrupt (11)
 
 		if (T > debounce){
 			debounce = T + 250*RTC_FREQ/1000;
+            MZONE_SEND(0, "IRQ SW2");
 			MZONE_SEND(1, "IRQ SW2");
 		    GPIO_REG(GPIO_REG(GPIO_GPOUT) & LED4 ? GPIO_CLEAR_BITS : GPIO_SET_BITS) = LED4;
 		}
@@ -78,6 +79,7 @@ __attribute__((interrupt())) void plic_handler(void) { // plic interrupt (11)
 
 		if (T > debounce){
 			debounce = T + 250*RTC_FREQ/1000;
+            MZONE_SEND(0, "IRQ SW3");
 			MZONE_SEND(1, "IRQ SW3");
             GPIO_REG(GPIO_REG(GPIO_GPOUT) & LED3 ? GPIO_CLEAR_BITS : GPIO_SET_BITS) = LED3;
 		}

@@ -111,12 +111,6 @@
 			<resource resourceType="PROJECT" workspacePath="/multizone-sdk-pfsc"/>
 		</configuration>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1359029007.668057433;cdt.managedbuild.toolchain.gnu.cross.base.1359029007.668057433.;cdt.managedbuild.tool.gnu.cross.c.compiler.315548965;cdt.managedbuild.tool.gnu.c.compiler.input.1116648218">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 		<buildTargets>
 			<target name="clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
@@ -144,5 +138,14 @@
 				<runAllBuilders>true</runAllBuilders>
 			</target>
 		</buildTargets>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1359029007;cdt.managedbuild.toolchain.gnu.cross.base.1359029007.871676108;cdt.managedbuild.tool.gnu.cross.c.compiler.262651274;cdt.managedbuild.tool.gnu.c.compiler.input.1939954707">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1359029007.668057433;cdt.managedbuild.toolchain.gnu.cross.base.1359029007.668057433.;cdt.managedbuild.tool.gnu.cross.c.compiler.315548965;cdt.managedbuild.tool.gnu.c.compiler.input.1116648218">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

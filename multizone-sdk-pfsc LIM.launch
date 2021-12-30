@@ -56,9 +56,6 @@
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>
     </listAttribute>
-    <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
-        <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
-    </listAttribute>
     <stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;memoryBlockExpressionList context=&quot;Context string&quot;&gt;&#10;    &lt;memoryBlockExpression address=&quot;16779904&quot; label=&quot;0x01000A80&quot;/&gt;&#10;    &lt;memoryBlockExpression address=&quot;33554432&quot; label=&quot;0x02000000&quot;/&gt;&#10;&lt;/memoryBlockExpressionList&gt;&#10;"/>
     <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
     <stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value="0x0C002000,0x8000048,0x8000400,0x8000448,0x800000,0x8006800,0x800D800,8102000,0x08102000,0x08010000,0x08004fc0,0x8010100,0x80104c0,0x8012000,0x8022000"/>

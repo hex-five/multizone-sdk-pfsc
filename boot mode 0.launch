@@ -13,4 +13,3 @@
     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-jar mpfsBootmodeProgrammer.jar&#13;&#10;--bootmode 0&#13;&#10;--die MPFS250T_ES&#13;&#10;--package FCVG484"/>
     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${env_var:HOME}/microsemi/SoftConsole-v2021.1/extras/mpfs/"/>
 </launchConfiguration>
-

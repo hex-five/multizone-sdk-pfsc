@@ -75,6 +75,7 @@ LINK_DEPS += $(LINKER_SCRIPT)
 HEX = $(subst .elf,.hex,$(TARGET))
 BIN = $(subst .elf,.bin,$(TARGET))
 LST = $(subst .elf,.lst,$(TARGET))
+MAP = $(subst .elf,.map,$(TARGET))
 SIZ = $(subst .elf,.siz,$(TARGET))
 
 $(TARGET): $(LINK_OBJS) $(LINK_DEPS)

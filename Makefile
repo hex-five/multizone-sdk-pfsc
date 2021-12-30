@@ -92,7 +92,7 @@ ifeq ($(BOARD), PFSC-LIM)
     GDB_PORT ?= 3333
     GDB_LOAD_ARGS ?= -batch
     GDB_LOAD_CMDS += -ex 'target extended-remote localhost:$(GDB_PORT)'
-    GDB_LOAD_CMDS += -ex 'monitor reset halt'
+    GDB_LOAD_CMDS += -ex 'monitor reset init'
     GDB_LOAD_CMDS += -ex 'load'
     GDB_LOAD_CMDS += -ex 'thread apply all set $$pc=0x08010100'
     GDB_LOAD_CMDS += -ex 'monitor resume'
@@ -126,7 +126,7 @@ ifeq ($(BOARD), PFSC-ENVM)
     .PHONY: load
     
     load:
-    # Convert firmware.hex to multizone.elf as required by mpfsBootmodeProgrammer.jar
+    # Convert firmware.hex to firmware.elf as required by mpfsBootmodeProgrammer.jar
 	$(OBJCOPY) -S -I ihex -O binary firmware.hex firmware.bin
 	$(LD) -b binary -r -o firmware.tmp firmware.bin
 	$(OBJCOPY) --rename-section .data=.text --set-section-flags .data=alloc,code,load firmware.tmp

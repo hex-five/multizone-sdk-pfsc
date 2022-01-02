@@ -1,3 +1,17 @@
+diff --git a/examples/mss-usb/mpfs-usb-host-hid/mpfs-usb-host-hid renode-emulation-platform.launch b/examples/mss-usb/mpfs-usb-host-hid/mpfs-usb-host-hid renode-emulation-platform.launch
+index d0da9dd..5d755cf 100644
+--- a/examples/mss-usb/mpfs-usb-host-hid/mpfs-usb-host-hid renode-emulation-platform.launch	
++++ b/examples/mss-usb/mpfs-usb-host-hid/mpfs-usb-host-hid renode-emulation-platform.launch	
+@@ -3,9 +3,6 @@
+     <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+         <mapEntry key="RENODE_CUSTOM_SCRIPTS" value="${env_var:SC_INSTALL_DIR}/renode-microchip-mods"/>
+     </mapAttribute>
+-    <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+-        <listEntry value="org.eclipse.ui.externaltools.launchGroup"/>
+-    </listAttribute>
+     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${env_var:RENODE_BINARY_LAUNCHER}"/>
+     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="${env_var:RENODE_BINARY_ARGUMENT} ${project_loc}/renode/mpfs-usb-platform.resc"/>
+     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${eclipse_home}../renode/bin"/>
 diff --git a/src/platform/mpfs_hal/common/mss_mtrap.c b/src/platform/mpfs_hal/common/mss_mtrap.c
 index 150a449..3672e72 100644
 --- a/src/platform/mpfs_hal/common/mss_mtrap.c
@@ -120,7 +134,7 @@ index 150a449..3672e72 100644
  
  #ifdef __cplusplus
 diff --git a/src/platform/mpfs_hal/startup_gcc/mss_entry.S b/src/platform/mpfs_hal/startup_gcc/mss_entry.S
-index 9e049de..989b718 100644
+index 9e049de..3adea13 100644
 --- a/src/platform/mpfs_hal/startup_gcc/mss_entry.S
 +++ b/src/platform/mpfs_hal/startup_gcc/mss_entry.S
 @@ -1,10 +1,6 @@
@@ -141,7 +155,7 @@ index 9e049de..989b718 100644
  .skip_e51:
      # mscratch must be init to zero- we are not using scratch memory
 -    csrw mscratch, zero
-+   #csrw mscratch, zero
++   #csrw mscratch, zero /* Hex Five Mod */
      csrw mcause, zero
      csrw mepc, zero
      /*

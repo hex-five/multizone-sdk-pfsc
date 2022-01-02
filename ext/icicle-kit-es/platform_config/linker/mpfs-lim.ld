@@ -99,8 +99,8 @@ MEMORY
     eNVM_SEC2 (rx) : ORIGIN  = 0x20220000, LENGTH = 8k
     eNVM_SEC0_1_3 (rx) : ORIGIN  = 0x20222000, LENGTH = 120k
     /* LIM - we place code here in this example */
-    ram_PROG (rx)  : ORIGIN = 0x0801C000, LENGTH = 24K
-    ram_DATA (rwx) : ORIGIN = 0x08004000, LENGTH = 48K
+    ram_PROG (rx)  : ORIGIN = 0x0800A000, LENGTH = 24K
+    ram_DATA (rwx) : ORIGIN = 0x08014000, LENGTH = 48K
     ram_DTIM (rwx) : ORIGIN = 0x01000000, LENGTH = 7k
     scratchpad(rwx): ORIGIN = 0x0A000000, LENGTH = 512k
     /* This 1k of DTIM is used to run code when switching the eNVM clock */

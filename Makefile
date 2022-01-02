@@ -94,7 +94,7 @@ ifeq ($(BOARD), PFSC-LIM)
     GDB_LOAD_CMDS += -ex 'target extended-remote localhost:$(GDB_PORT)'
     GDB_LOAD_CMDS += -ex 'monitor reset init'
     GDB_LOAD_CMDS += -ex 'load'
-    GDB_LOAD_CMDS += -ex 'thread apply all set $$pc=0x08010100'
+    GDB_LOAD_CMDS += -ex 'thread apply all set $$pc=0x08000000'
     GDB_LOAD_CMDS += -ex 'monitor resume'
     GDB_LOAD_CMDS += -ex 'monitor shutdown'
     GDB_LOAD_CMDS += -ex 'quit'

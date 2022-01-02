@@ -20,7 +20,7 @@
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerTclPortNumber" value="6666"/>
     <intAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.gdbServerTelnetPortNumber" value="4444"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.otherInitCommands" value="add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/bsp/boot/boot.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone1/zone1.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone2/zone2.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone3/zone3.elf&#10;add-symbol-file ${workspace_loc:/multizone-sdk-pfsc}/apps/hart0/zone4/zone4.elf"/>
-    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.otherRunCommands" value="thread apply all set $pc=0x08010100"/>
+    <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.otherRunCommands" value="thread apply all set $pc=0x08000000"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.openocd.secondResetType" value="halt"/>
     <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.svdPath" value=""/>
     <stringAttribute key="org.eclipse.cdt.debug.gdbjtag.core.imageFileName" value="${workspace_loc:/multizone-sdk-pfsc/firmware.hex}"/>

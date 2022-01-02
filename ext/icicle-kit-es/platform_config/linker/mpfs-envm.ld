@@ -97,7 +97,7 @@ MEMORY
     /* eNVM can be made into 128K section or split as required */
     /* In this example, our reset vector is set to point to the */
     /* start of SEC2 at  0x20220000. */
-    eNVM_SEC_2_0_1_3 (rx) : ORIGIN  = 0x2022C000, LENGTH = 24K 
+    eNVM_SEC_2_0_1_3 (rx) : ORIGIN  = 0x2022A000, LENGTH = 24K 
     ram_LIM (rwx) : ORIGIN  = 0x08004000, LENGTH = 48K
     ram_dtm (rwx) : ORIGIN  = 0x01000000, LENGTH = 7k       /* DTIM */
     scratchpad(rwx): ORIGIN = 0x0A000000, LENGTH = 512k

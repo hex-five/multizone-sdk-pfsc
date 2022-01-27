@@ -12,7 +12,7 @@ This release of the MultiZone SDK supports the following development boards:
 - [SiFive HiFive1 Rev B (Freedom E310 SoC)](https://www.sifive.com/boards/hifive1-rev-b)
 - [SiFive Unleashed (Freedom U540 SoC)](https://www.sifive.com/boards/hifive-unleashed)
 
-This repository is for the Microchip Icicle Kit board.
+This repository is for the Microchip Icicle Kit board reference design [2021.02](https://github.com/polarfire-soc/icicle-kit-reference-design/releases/tag/2021.02), [2021.04](https://github.com/polarfire-soc/icicle-kit-reference-design/releases/tag/2021.04), [2021.08](https://github.com/polarfire-soc/icicle-kit-reference-design/releases/tag/2021.08), [2021.11](https://github.com/polarfire-soc/icicle-kit-reference-design/releases/tag/2021.11)
 
 ### MultiZone SDK Installation ###
 

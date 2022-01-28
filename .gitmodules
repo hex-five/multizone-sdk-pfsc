@@ -1,6 +1,6 @@
-[submodule "ext/bare-metal-lib"]
-	path = ext/bare-metal-lib
-	url = https://github.com/polarfire-soc/polarfire-soc-bare-metal-library.git
 [submodule "ext/icicle-ref-design"]
 	path = ext/icicle-ref-design
 	url = https://github.com/polarfire-soc/icicle-kit-reference-design.git
+[submodule "ext/pfsc-platform"]
+	path = ext/pfsc-platform
+	url = https://github.com/polarfire-soc/platform.git

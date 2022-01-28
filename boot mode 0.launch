@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.ui.externaltools.ProgramLaunchConfigurationType">
     <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-        <mapEntry key="FPGENPROG" value="${env_var:HOME}/microsemi/Libero_SoC_v2021.1/Libero/bin64/fpgenprog"/>
-        <mapEntry key="SC_INSTALL_DIR" value="${env_var:HOME}/microsemi/SoftConsole-v2021.1/"/>
+        <mapEntry key="FPGENPROG" value="${env_var:HOME}/microsemi/Program_Debug_v2021.3/Program_Debug_Tool/bin64/fpgenprog"/>
+        <mapEntry key="SC_INSTALL_DIR" value="${env_var:HOME}/microsemi/SoftConsole-v2021.3-7.0.0.599"/>
     </mapAttribute>
     <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
         <listEntry value="org.eclipse.ui.externaltools.launchGroup"/>
@@ -11,5 +11,5 @@
     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LAUNCH_CONFIGURATION_BUILD_SCOPE" value="${none}"/>
     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/bin/java"/>
     <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-jar mpfsBootmodeProgrammer.jar&#13;&#10;--bootmode 0&#13;&#10;--die MPFS250T_ES&#13;&#10;--package FCVG484"/>
-    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${env_var:HOME}/microsemi/SoftConsole-v2021.1/extras/mpfs/"/>
+    <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${env_var:HOME}/microsemi/SoftConsole-v2021.3-7.0.0.599/extras/mpfs"/>
 </launchConfiguration>

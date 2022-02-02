@@ -2,6 +2,7 @@
 
 #include "mpfs_hal/mss_hal.h"
 
+/* Overrides weak symbol in ext/pfsc-platform/mpfs_hal/startup_gcc/system_startup.c */
 void e51(void) {
 
 	/* Enable UARTs */
@@ -36,4 +37,10 @@ void e51(void) {
     /* Boot MultiZone TEE */
     asm("csrr t0, mscratch; csrw mtvec, t0; ecall");
 
+}
+
+/* Overrides weak symbol in ext/pfsc-platform/mpfs_hal/startup_gcc/system_startup.c */
+uint8_t init_pmp(uint8_t hart_id) {
+  //pmp_configure(hart_id);
+    return (0U);
 }

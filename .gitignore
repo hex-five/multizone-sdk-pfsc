@@ -5,4 +5,4 @@
 *.lst
 *.map
 *.siz
-ext/icicle-kit-es/soc_config/
+ext/icicle-kit-es/fpga_design_config/

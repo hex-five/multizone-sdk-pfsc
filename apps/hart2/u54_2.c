@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "mpfs_hal/mss_hal.h"
-#include "drivers/mss_mmuart/mss_uart.h"
+#include "drivers/mss/mss_mmuart/mss_uart.h"
 
 void u54_2(void) {
 
@@ -27,7 +27,7 @@ void u54_2(void) {
 
 	MSS_UART_init(uart, MSS_UART_115200_BAUD, MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
 
-	MSS_UART_polled_tx_string (uart, "H2> ");
+	MSS_UART_polled_tx_string (uart, (uint8_t *)"H2> ");
 
 	while (1) {
 

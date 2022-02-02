@@ -5,12 +5,12 @@
 #include <stdlib.h>     // strtoul()
 
 #include "mpfs_hal/mss_hal.h"
-#include "drivers/mss_mmuart/mss_uart.h"
+#include "drivers/mss/mss_mmuart/mss_uart.h"
 #include "mss_multizone.h"
 
 #define mss_printf(format, args...) { \
             snprintf(mss_uart_tx_buf, sizeof mss_uart_tx_buf, format, ## args); \
-            MSS_UART_polled_tx_string (uart, mss_uart_tx_buf); \
+            MSS_UART_polled_tx_string (uart, (uint8_t *)mss_uart_tx_buf); \
         }
 
 typedef enum {zone1=1, zone2, zone3, zone4} Zone;
@@ -33,25 +33,25 @@ void handle_m_trap_h1(uintptr_t * regs, uintptr_t mcause, uintptr_t mepc){
     switch(mcause){
 
     case CAUSE_LOAD_ACCESS :
-        mss_printf("Load access fault : 0x%08x 0x%08x 0x%08x \n\r", mcause, mepc, mtval);
+        mss_printf("Load access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
         write_csr(mepc, mepc + (((*(char *)mepc) & 0b11) == 0b11 ? 4 : 2)); // skip faulty instruction
         return;
 
     case CAUSE_STORE_ACCESS :
-        mss_printf("Store access fault : 0x%08x 0x%08x 0x%08x \n\r", mcause, mepc, mtval);
+        mss_printf("Store access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
         write_csr(mepc, mepc + (((*(char *)mepc) & 0b11) == 0b11 ? 4 : 2)); // skip faulty instruction
         return;
 
     case CAUSE_FETCH_ACCESS :
-        mss_printf("Instr access fault : 0x%08x 0x%08x 0x%08x \n\r", mcause, mepc, mtval);
+        mss_printf("Instr access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
         break;
 
-    default : mss_printf("Exception : 0x%08x 0x%08x 0x%08x \n\r", mcause, mepc, mtval);
+    default : mss_printf("Exception : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
 
     }
 
     mss_printf("Press any key to continue \n\r");
-    char c='\0'; while( MSS_UART_get_rx(uart, &c, 1) == 0 ){;}
+    char c='\0'; while( MSS_UART_get_rx(uart, (uint8_t *)&c, 1) == 0 ){;}
     inputline[0]='\0';
     asm ("la t0, main; csrw mepc, t0" : : : "t0"); // TBD: asm("j _start");
 
@@ -145,7 +145,7 @@ void print_pmp(void){
 
 		}
 
-		mss_printf("0x%02x%08x 0x%02x%08x %s %s \n\r", (uint8_t)(start>>32), start, (uint8_t)(end>>32), end, rwx, type);
+		mss_printf("0x%02x%08x 0x%02x%08x %s %s \n\r", (unsigned)(start>>32), (unsigned)start, (unsigned)(end>>32), (unsigned)end, rwx, type);
 
 	}
 
@@ -385,7 +385,7 @@ int main (void) {
     while(1){
 
     	// UART RX event handler
-		if (MSS_UART_get_rx(uart, &c, 1) && readline(c)){
+		if (MSS_UART_get_rx(uart, (uint8_t *)&c, 1) && readline(c)){
 			cmd_handler();
 			mss_printf("\n\rH1 > ");
 			inputline[0]='\0';

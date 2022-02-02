@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "mpfs_hal/mss_hal.h"
-#include "drivers/mss_mmuart/mss_uart.h"
+#include "drivers/mss/mss_mmuart/mss_uart.h"
 
 void u54_1(void) {
 

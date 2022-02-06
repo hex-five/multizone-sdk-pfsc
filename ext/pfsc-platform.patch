@@ -1,0 +1,142 @@
+diff --git a/mpfs_hal/common/mss_mtrap.c b/mpfs_hal/common/mss_mtrap.c
+index 2226d7b..92f3b4a 100644
+--- a/mpfs_hal/common/mss_mtrap.c
++++ b/mpfs_hal/common/mss_mtrap.c
+@@ -5,6 +5,7 @@
+  *
+  * MPFS HAL Embedded Software
+  *
++ * Modifications copyright (C) 2021 Hex Five Security, Inc.*
+  */
+ 
+ /***************************************************************************
+@@ -20,8 +21,6 @@
+ extern "C" {
+ #endif
+ 
+-
+-
+ void handle_local_interrupt(uint8_t interrupt_no);
+ void handle_m_soft_interrupt(void);
+ void handle_m_timer_interrupt(void);
+@@ -32,6 +31,12 @@ void pmp_trap(uintptr_t * regs, uintptr_t mcause, uintptr_t mepc);
+ void trap_from_machine_mode(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc);
+ void bad_trap(uintptr_t* regs, uintptr_t dummy, uintptr_t mepc);
+ 
++void handle_m_trap_h0(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc); /* Hex Five mod */
++void handle_m_trap_h1(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc); /* Hex Five mod */
++void handle_m_trap_h2(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc); /* Hex Five mod */
++void handle_m_trap_h3(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc); /* Hex Five mod */
++void handle_m_trap_h4(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc); /* Hex Five mod */
++void handle_m_trap(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc); /* Hex Five mod */
+ 
+ void bad_trap(uintptr_t* regs, uintptr_t dummy, uintptr_t mepc)
+ {
+@@ -748,33 +753,63 @@ void trap_from_machine_mode(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc)
+     }
+     else
+     {
+-        uint32_t i = 0U;
+-        while(1)
++
++        switch(read_csr(mhartid)) {
++        case 0U: handle_m_trap_h0(regs, mcause, mepc); break;
++        case 1U: handle_m_trap_h1(regs, mcause, mepc); break;
++        case 2U: handle_m_trap_h2(regs, mcause, mepc); break;
++        case 3U: handle_m_trap_h3(regs, mcause, mepc); break;
++        case 4U: handle_m_trap_h4(regs, mcause, mepc); break;
++        default: handle_m_trap(regs, mcause, mepc);
++        }
++
++    }
++}
++
++__attribute__((weak)) void handle_m_trap_h0(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc){
++    handle_m_trap(regs, dummy, mepc);
++}
++__attribute__((weak)) void handle_m_trap_h1(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc){
++    handle_m_trap(regs, dummy, mepc);
++}
++__attribute__((weak)) void handle_m_trap_h2(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc){
++    handle_m_trap(regs, dummy, mepc);
++}
++__attribute__((weak)) void handle_m_trap_h3(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc){
++    handle_m_trap(regs, dummy, mepc);
++}
++__attribute__((weak)) void handle_m_trap_h4(uintptr_t * regs, uintptr_t dummy, uintptr_t mepc){
++    handle_m_trap(regs, dummy, mepc);
++}
++
++void handle_m_trap(uintptr_t * regs, uintptr_t mcause, uintptr_t mepc) /* Hex Five mod */
++{
++    uint32_t i = 0U;
++    while(1)
++    {
++        /* wait for watchdog */
++        i++;        /* added some code as SC debugger hangs if in loop doing nothing */
++        if(i == 0x1000U)
+         {
+-            /* wait for watchdog */
+-            i++;        /* added some code as SC debugger hangs if in loop doing nothing */
+-            if(i == 0x1000U)
+-            {
+                 i = mcause; /* so mcause is not optimised out */
+-            }
+         }
+-        switch(mcause)
+-        {
++    }
++    switch(mcause)
++    {
+ 
+-            case CAUSE_LOAD_PAGE_FAULT:
+-                break;
+-            case CAUSE_STORE_PAGE_FAULT:
+-                break;
+-            case CAUSE_FETCH_ACCESS:
+-                break;
+-            case CAUSE_LOAD_ACCESS:
+-                break;
+-            case CAUSE_STORE_ACCESS:
+-                break;
+-            default:
+-                bad_trap(regs, dummy, mepc);
+-                break;
+-        }
++        case CAUSE_LOAD_PAGE_FAULT:
++            break;
++        case CAUSE_STORE_PAGE_FAULT:
++            break;
++        case CAUSE_FETCH_ACCESS:
++            break;
++        case CAUSE_LOAD_ACCESS:
++            break;
++        case CAUSE_STORE_ACCESS:
++            break;
++        default:
++            bad_trap(regs, mcause, mepc);
++            break;
+     }
+ }
+ 
+diff --git a/mpfs_hal/startup_gcc/mss_entry.S b/mpfs_hal/startup_gcc/mss_entry.S
+index 5ff6d95..f2b2ea3 100644
+--- a/mpfs_hal/startup_gcc/mss_entry.S
++++ b/mpfs_hal/startup_gcc/mss_entry.S
+@@ -5,6 +5,7 @@
+  *
+  * MPFS HAL Embedded Software
+  *
++ * Modifications copyright (C) 2021 Hex Five Security, Inc.
+  */
+ 
+ /*******************************************************************************
+@@ -52,7 +53,7 @@ _start:
+     csrw medeleg, 0
+ .skip_e51:
+     # mscratch must be init to zero- we are not using scratch memory
+-    csrw mscratch, zero
++   #csrw mscratch, zero /* Hex Five mod*/
+     csrw mcause, zero
+     csrw mepc, zero
+     /*

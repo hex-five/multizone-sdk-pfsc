@@ -32,7 +32,7 @@ Note: GtkTerm is optional and required only to connect to the reference applicat
 cd ~
 git clone --recursive https://github.com/hex-five/multizone-sdk-pfsc.git
 cd multizone-sdk-pfsc
-git apply -p1 ext/bare-metal-lib.patch --directory=ext/bare-metal-lib
+git apply -p1 ext/pfsc-platform.patch --directory=ext/pfsc-platform
 ```
 
 

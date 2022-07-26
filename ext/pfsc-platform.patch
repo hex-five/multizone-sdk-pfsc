@@ -1,12 +1,12 @@
 diff --git a/mpfs_hal/common/mss_mtrap.c b/mpfs_hal/common/mss_mtrap.c
-index 2226d7b..92f3b4a 100644
+index 2226d7b..45c5979 100644
 --- a/mpfs_hal/common/mss_mtrap.c
 +++ b/mpfs_hal/common/mss_mtrap.c
 @@ -5,6 +5,7 @@
   *
   * MPFS HAL Embedded Software
   *
-+ * Modifications copyright (C) 2021 Hex Five Security, Inc.*
++ * Modifications copyright (C) 2021 Hex Five Security, Inc.
   */
  
  /***************************************************************************

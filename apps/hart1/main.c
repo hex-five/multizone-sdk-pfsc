@@ -1,59 +1,65 @@
 /* Copyright(C) 2020 Hex Five Security, Inc. - All Rights Reserved */
 
-#include <string.h>	    // strxxx()
 #include <stdio.h>      // mss_printf() s_printf()
 #include <stdlib.h>     // strtoul()
+#include <string.h>     // strxxx()
 
-#include "mpfs_hal/mss_hal.h"
 #include "drivers/mss/mss_mmuart/mss_uart.h"
+#include "mpfs_hal/mss_hal.h"
 #include "mss_multizone.h"
-
-#define mss_printf(format, args...) { \
-            snprintf(mss_uart_tx_buf, sizeof mss_uart_tx_buf, format, ## args); \
-            MSS_UART_polled_tx_string (uart, (uint8_t *)mss_uart_tx_buf); \
-        }
-
-typedef enum {zone1=1, zone2, zone3, zone4} Zone;
 
 char mss_uart_tx_buf [80];
 mss_uart_instance_t *uart = &g_mss_uart1_lo;
 
+#define mss_printf(format, args...) { \
+            snprintf(mss_uart_tx_buf, sizeof mss_uart_tx_buf, format, ## args); \
+            MSS_UART_polled_tx_string (uart, (const uint8_t *)mss_uart_tx_buf); \
+        }
+
+typedef enum {zone1=1, zone2, zone3, zone4} Zone;
+
 static char inputline[32+1]="";
 
-static volatile char inbox[4][16] = { {'\0'}, {'\0'}, {'\0'}, {'\0'} };
-int inbox_empty(void){
-	return (inbox[0][0]=='\0' && inbox[1][0]=='\0' && inbox[2][0]=='\0' && inbox[3][0]=='\0');
+#define MSG_SIZE 16
+static volatile char inbox[4][MSG_SIZE] = { "", "", "", ""};
+int inbox_is_empty(void){
+	return (inbox[0][0]=='\0' &&
+	        inbox[1][0]=='\0' &&
+            inbox[2][0]=='\0' &&
+	        inbox[3][0]=='\0');
 }
+
+static int hartid;
 
 // ------------------------------------------------------------------------
 void handle_m_trap_h1(uintptr_t * regs, uintptr_t mcause, uintptr_t mepc){
 
-    uint64_t mtval = read_csr(mtval);
+    unsigned mtval = read_csr(mtval);
 
     switch(mcause){
 
     case CAUSE_LOAD_ACCESS :
-        mss_printf("Load access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
+        mss_printf("Load access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, mtval);
         write_csr(mepc, mepc + (((*(char *)mepc) & 0b11) == 0b11 ? 4 : 2)); // skip faulty instruction
         return;
 
     case CAUSE_STORE_ACCESS :
-        mss_printf("Store access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
+        mss_printf("Store access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, mtval);
         write_csr(mepc, mepc + (((*(char *)mepc) & 0b11) == 0b11 ? 4 : 2)); // skip faulty instruction
         return;
 
     case CAUSE_FETCH_ACCESS :
-        mss_printf("Instr access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
+        mss_printf("Instr access fault : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, mtval);
         break;
 
-    default : mss_printf("Exception : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, (unsigned)mtval);
+    default : mss_printf("Exception : 0x%08x 0x%08x 0x%08x \n\r", (unsigned)mcause, (unsigned)mepc, mtval);
 
     }
 
     mss_printf("Press any key to continue \n\r");
-    char c='\0'; while( MSS_UART_get_rx(uart, (uint8_t *)&c, 1) == 0 ){;}
+    unsigned char c='\0'; while( MSS_UART_get_rx(uart, &c, 1) == 0 ){;}
     inputline[0]='\0';
-    asm ("la t0, main; csrw mepc, t0" : : : "t0"); // TBD: asm("j _start");
+    asm ("la t0, main; csrw mepc, t0; mret");
 
 }
 
@@ -61,9 +67,9 @@ void handle_m_trap_h1(uintptr_t * regs, uintptr_t mcause, uintptr_t mepc){
 void Software_h1_IRQHandler(void){
 
     for (Zone zone = zone1; zone <= zone4; zone++) {
-        char msg[16];
+        char msg[MSG_SIZE];
         if (MZONE_RECV(zone, msg))
-            memcpy((char*) &inbox[zone-1][0], msg, sizeof inbox[0]);
+            memcpy((char*) &inbox[zone-1][0], msg, MSG_SIZE);
     }
 
     clear_soft_interrupt();
@@ -77,12 +83,6 @@ void print_pmp(void){
 	#define TOR   0b00001000
 	#define NA4   0b00010000
 	#define NAPOT 0b00011000
-
-//  #define PMP_R   0x01
-//  #define PMP_W   0x02
-//  #define PMP_X   0x04
-//  #define PMP_A   0x18
-//  #define PMP_L   0x80
 
     unsigned long pmpcfg0; asm ( "csrr %0, pmpcfg0" : "=r"(pmpcfg0) );
     unsigned long pmpcfg2; asm ( "csrr %0, pmpcfg2" : "=r"(pmpcfg2) );
@@ -119,13 +119,13 @@ void print_pmp(void){
 
 		case TOR :
 			start = pmpaddr[i-1]<<2;
-			end =  (pmpaddr[i]<<2) -1;
+			end =  (pmpaddr[i]<<2);
 			strcpy(type, "TOR");
 			break;
 
 		case NA4 :
 			start = pmpaddr[i]<<2;
-			end =  start+4 -1;
+			end =  start+4;
 			strcpy(type, "NA4");
 			break;
 
@@ -134,7 +134,7 @@ void print_pmp(void){
 				if ( ((pmpaddr[i] >> j) & 1UL) == 0){
 					const unsigned long size = 1UL << (3+j);
 					start = (pmpaddr[i] >>j) <<(j+2);
-					end = start + size -1;
+					end = start + size;
 					strcpy(type, "NAPOT");
 					break;
 				}
@@ -145,7 +145,9 @@ void print_pmp(void){
 
 		}
 
-		mss_printf("0x%02x%08x 0x%02x%08x %s %s \n\r", (unsigned)(start>>32), (unsigned)start, (unsigned)(end>>32), (unsigned)end, rwx, type);
+		mss_printf("0x%02x%08x 0x%02x%08x %s %s \n\r",
+		        (unsigned)(start>>32), (unsigned)start, (unsigned)(end>>32),
+		        (unsigned)end, rwx, type);
 
 	}
 
@@ -154,7 +156,7 @@ void print_pmp(void){
 // ------------------------------------------------------------------------
 void msg_handler(void) {
 
-    //CSRC(mie, 1 << 3);
+    __disable_irq();
 
     for (Zone zone = zone1; zone <= zone4; zone++) {
 
@@ -163,12 +165,12 @@ void msg_handler(void) {
         if (*msg != '\0') {
 
             if (strcmp("ping", msg) == 0) {
-                MZONE_SEND(zone, (char[16]){"pong"});
+                MZONE_SEND(zone, (char[MSG_SIZE]){"pong"});
 
             } else {
-                mss_printf("\e7\e[2K");   // save curs pos & clear entire line
-                mss_printf("\rZ%d > %.16s\n\r", zone, msg);
-                mss_printf("\nH1 > ");
+                mss_printf("\e7\r");   // save curs pos & clear entire line
+                mss_printf("Z%d > %.16s\n\r", zone, msg);
+                mss_printf("\nH%d > ", hartid);
                 mss_printf("%s", inputline);
                 mss_printf("\e8\e[2B");   // restore curs pos & curs down 2x
             }
@@ -179,7 +181,7 @@ void msg_handler(void) {
 
     }
 
-    //CSRS(mie, 1 << 3);
+    __enable_irq();
 
 }
 
@@ -232,7 +234,7 @@ void cmd_handler(void){
 	} else if (strcmp(tk[0], "send")==0){
 	// --------------------------------------------------------------------
 		if (tk[1] != NULL && tk[1][0]>='1' && tk[1][0]<='4' && tk[2] != NULL){
-			char msg[16]; strncpy(msg, tk[2], (sizeof msg)-1);
+			char msg[MSG_SIZE]; strncpy(msg, tk[2], (sizeof msg)-1);
 			if (!MZONE_SEND( tk[1][0]-'0', msg) ){
 				mss_printf("Error: Inbox full.\n\r");
 			}
@@ -242,7 +244,7 @@ void cmd_handler(void){
 	} else if (strcmp(tk[0], "recv")==0){
 	// --------------------------------------------------------------------
 		if (tk[1] != NULL && tk[1][0]>='1' && tk[1][0]<='4'){
-			char msg[16];
+			char msg[MSG_SIZE];
 			if (MZONE_RECV(tk[1][0]-'0', msg)){
 				mss_printf("msg : %.16s\n\r", msg);
 			} else
@@ -306,7 +308,7 @@ int readline(const char c) {
 				h++;
 				strcpy(inputline, history[h]);
 				mss_printf("\e[2K"); // 2K clear entire line - cur pos dosn't change
-				mss_printf("\rH1 > ");
+				mss_printf("\rH%d > ", hartid);
 				mss_printf(inputline);
 				p=strlen(inputline);
 
@@ -318,7 +320,7 @@ int readline(const char c) {
 				h--;
 				strcpy(inputline, history[h]);
 				mss_printf("\e[2K"); // 2K clear entire line - cur pos dosn't change
-				mss_printf("\rH1 > ");
+                mss_printf("\rH%d > ", hartid);
 				mss_printf(inputline);
 				p=strlen(inputline);
 			}
@@ -363,36 +365,40 @@ int readline(const char c) {
 // ------------------------------------------------------------------------
 int main (void) {
 
+    hartid = read_csr(mhartid);
+
     MSS_UART_init(uart, MSS_UART_115200_BAUD, MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
 
 	mss_printf("\e[2J\e[H"); // clear terminal screen
+    mss_printf("===================================================================\n\r");
+    mss_printf("                    MultiZone® Trusted Firmware                    \n\r");
+    mss_printf("             Patents US 11,151,262 and PCT/US2019/03877            \n\r");
+    mss_printf("   Copyright© 2022 Hex Five Security, Inc. - All Rights Reserved   \n\r");
+    mss_printf("===================================================================\n\r");
+    mss_printf("This version of MultiZone® Trusted Firmware is meant for evaluation\n\r");
+    mss_printf("purposes only. As such, use of this software is governed by the    \n\r");
+    mss_printf("Evaluation License. There may be other functional limitations as   \n\r");
+    mss_printf("described in the evaluation SDK documentation. The commercial      \n\r");
+    mss_printf("version of the software does not have these restrictions.          \n\r");
+    mss_printf("===================================================================\n\r");
+	mss_printf("\n\rH%d > ", hartid);
 
-	mss_printf("=====================================================================\n\r");
-	mss_printf("      	             Hex Five MultiZone® Security                    \n\r");
-	mss_printf("    Copyright© 2020 Hex Five Security, Inc. - All Rights Reserved    \n\r");
-	mss_printf("=====================================================================\n\r");
-	mss_printf("This version of MultiZone® Security is meant for evaluation purposes \n\r");
-	mss_printf("only. As such, use of this software is governed by the Evaluation    \n\r");
-	mss_printf("License. There may be other functional limitations as described in   \n\r");
-	mss_printf("the evaluation SDK documentation. The commercial version of the      \n\r");
-	mss_printf("software does not have these restrictions.                           \n\r");
-	mss_printf("=====================================================================\n\r");
-
-	mss_printf("\n\rH1 > ");
-
-	char c = '\0';
+	// Enable IPC
+	set_csr(mie, MIP_MSIP);
+	set_csr(mstatus, MSTATUS_MIE);
 
     while(1){
 
     	// UART RX event handler
-		if (MSS_UART_get_rx(uart, (uint8_t *)&c, 1) && readline(c)){
+        unsigned char c = '\0';
+		if (MSS_UART_get_rx(uart, &c, 1) && readline(c)){
 			cmd_handler();
-			mss_printf("\n\rH1 > ");
+			mss_printf("\n\rH%d > ", hartid);
 			inputline[0]='\0';
 		}
 
 		// MultiZone IPC message handler
-		if (!inbox_empty()){
+		if (!inbox_is_empty()){
 		    msg_handler();
 		}
 

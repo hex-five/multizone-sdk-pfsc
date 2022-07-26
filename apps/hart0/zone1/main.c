@@ -3,16 +3,16 @@
 #include <fcntl.h>	// open()
 #include <unistd.h> // read() write()
 #include <string.h>	// strxxx()
-#include "printf.h" // #include <stdio.h>    // printf() sprintf()
 #include <stdlib.h> // qsort() strtoul()
 #include <limits.h> // UINT_MAX ULONG_MAX
 
+#include "printf.h" // #include <stdio.h>    // printf() sprintf()
 #include "platform.h"
 #include "multizone.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-typedef enum {zone0, zone1, zone2, zone3, zone4} Zone;
+typedef enum {zone1=1, zone2, zone3, zone4, zone5, zone6, zone7, zone8} Zone;
 
 #define BUFFER_SIZE 32
 static volatile struct{
@@ -26,13 +26,41 @@ int buffer_empty(void){
 
 static char inputline[BUFFER_SIZE+1]="";
 
-static volatile char inbox[1+4][16] = { {'\0'}, {'\0'}, {'\0'}, {'\0'}, {'\0'} };
-int inbox_empty(void){
-	return (inbox[0][0]=='\0' &&
-	        inbox[1][0]=='\0' &&
-	        inbox[2][0]=='\0' &&
-            inbox[3][0]=='\0' &&
-	        inbox[4][0]=='\0');
+#define MSG_SIZE 16
+#define INBOX_SIZE 4*MSG_SIZE
+typedef volatile struct Inbox {
+    char msg[INBOX_SIZE];
+    unsigned len;
+} Inbox;
+
+static Inbox inbox[8] = {
+        { .msg = "", .len = 0 },
+        { .msg = "", .len = 0 },
+        { .msg = "", .len = 0 },
+        { .msg = "", .len = 0 },
+        { .msg = "", .len = 0 },
+        { .msg = "", .len = 0 },
+        { .msg = "", .len = 0 },
+        { .msg = "", .len = 0 },
+};
+
+int inbox_is_empty(void){
+
+    CSRC(mie, 1<<3);
+
+    const int empty = ( inbox[0].len==0 &&
+                        inbox[1].len==0 &&
+                        inbox[2].len==0 &&
+                        inbox[3].len==0 &&
+                        inbox[4].len==0 &&
+                        inbox[5].len==0 &&
+                        inbox[6].len==0 &&
+                        inbox[7].len==0
+	);
+
+    CSRS(mie, 1<<3);
+
+    return empty;
 }
 
 // ------------------------------------------------------------------------
@@ -92,10 +120,21 @@ __attribute__((interrupt())) void trp_isr(void)  { // nmi traps (0)
 
 }
 __attribute__((interrupt())) void msi_isr(void)  { // msip/inbox (3)
-    for (Zone zone = zone0; zone <= zone4; zone++) {
-        char msg[16];
-        if (MZONE_RECV(zone, msg))
-            memcpy((char*) &inbox[zone][0], msg, sizeof inbox[0]);
+
+    for (Zone zone = zone1; zone <= zone8; zone++) {
+
+        Inbox *const in = &inbox[zone-1];
+
+        char msg[MSG_SIZE];
+        if (MZONE_RECV(zone, msg)){
+
+            if (in->len >= INBOX_SIZE) in->len = 0;
+
+            memcpy( (char*)(in->msg+in->len), msg, MSG_SIZE);
+            in->len += MSG_SIZE;
+
+        }
+
     }
 
 }
@@ -382,41 +421,47 @@ void print_pmp(void){
 }
 
 // ------------------------------------------------------------------------
-void msg_handler() {
+void msg_handler(void) {
 
-    CSRC(mie, 1 << 3);
+    CSRC(mie, 1<<3);
 
-    for (Zone zone = zone0; zone <= zone4; zone++) {
+    for (Zone zone = zone1; zone <= zone8; zone++) {
 
-        char * const msg = (char *)inbox[zone];
+        Inbox *const in = &inbox[zone-1];
+        char *const msg = (char *const)(in->msg);
+        const size_t len = strnlen(msg, in->len);
 
-        if (*msg != '\0') {
+        if (len > 0 && len != in->len) {
 
             if (strcmp("ping", msg) == 0) {
+
                 MZONE_SEND(zone, (char[16]){"pong"});
 
-            } else {
+            } else if (strcmp("restart", msg)==0){
+                asm ("j _start");
 
-                write(1, "\e7\e[2K", 6);   // save curs pos & clear entire line
-                printf("\rZ%d > %.16s\n", zone, msg);
-                write(1, "\nZ1 > ", 6);
-                write(1, inputline, strlen(inputline));
+			} else {
+
+                write(1, "\e7\r", 3);   // save curs pos & move to 1st column
+                printf("Z%d > %s \n", zone, msg);
+                if ( strchr(msg, '\n') == NULL ) printf("\n");
+                printf("Z1 > %s", inputline);
                 write(1, "\e8\e[2B", 6);   // restore curs pos & curs down 2x
 
-            }
+			}
 
-            *msg = '\0';
+            in->len = 0;
 
         }
 
     }
 
-    CSRS(mie, 1 << 3);
+    CSRS(mie, 1<<3);
 
 }
 
 // ------------------------------------------------------------------------
-void cmd_handler(){
+void cmd_handler(void){
 
 	char * tk[9]; tk[0] = strtok(inputline, " "); for (int i=1; i<9; i++) tk[i] = strtok(NULL, " ");
 
@@ -472,22 +517,22 @@ void cmd_handler(){
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "send")==0){
 	// --------------------------------------------------------------------
-		if (tk[1] != NULL && tk[1][0]>='0' && tk[1][0]<='4' && tk[2] != NULL){
+		if (tk[1] != NULL && tk[1][0]>='1' && tk[1][0]<='8' && tk[2] != NULL){
 			char msg[16]; strncpy(msg, tk[2], (sizeof msg)-1);
 			if (!MZONE_SEND( tk[1][0]-'0', msg) )
 				printf("Error: Inbox full.\n");
-		} else printf("Syntax: send {0|1|2|3|4} message \n");
+		} else printf("Syntax: send {1|2|3|4|5|6|7|8} message \n");
 
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "recv")==0){
 	// --------------------------------------------------------------------
-		if (tk[1] != NULL && tk[1][0]>='0' && tk[1][0]<='4'){
+		if (tk[1] != NULL && tk[1][0]>='1' && tk[1][0]<='8'){
 			char msg[16];
 			if (MZONE_RECV(tk[1][0]-'0', msg))
 				printf("msg : %.16s\n", msg);
 			else
 				printf("Error: Inbox empty.\n");
-		} else printf("Syntax: recv {0|1|2|3|4} \n");
+		} else printf("Syntax: recv {1|2|3|4|5|6|7|8} \n");
 
 	// --------------------------------------------------------------------
 	} else if (strcmp(tk[0], "yield")==0){
@@ -550,7 +595,7 @@ void cmd_handler(){
 }
 
 // ------------------------------------------------------------------------
-int readline() {
+int readline(void) {
 // ------------------------------------------------------------------------
 
 	static size_t p=0;
@@ -670,17 +715,17 @@ int main (void) {
 
 	printf("\e[2J\e[H"); // clear terminal screen
 
-	printf("====================================================================\n");
-	printf("      	             Hex Five MultiZone® Security                   \n");
+	printf("===================================================================\n");
+	printf("                    MultiZone® Trusted Firmware                    \n");
     printf("              Patents US 11,151,262 and PCT/US2019/03877            \n");
-	printf("    Copyright© 2020 Hex Five Security, Inc. - All Rights Reserved   \n");
-	printf("====================================================================\n");
-	printf("This version of MultiZone® Security is meant for evaluation purposes\n");
-	printf("only. As such, use of this software is governed by the Evaluation   \n");
-	printf("License. There may be other functional limitations as described in  \n");
-	printf("the evaluation SDK documentation. The commercial version of the     \n");
-	printf("software does not have these restrictions.                          \n");
-	printf("====================================================================\n");
+	printf("   Copyright© 2022 Hex Five Security, Inc. - All Rights Reserved   \n");
+	printf("===================================================================\n");
+	printf("This version of MultiZone® Trusted Firmware is meant for evaluation\n");
+	printf("purposes only. As such, use of this software is governed by the    \n");
+	printf("Evaluation License. There may be other functional limitations as   \n");
+	printf("described in the evaluation SDK documentation. The commercial      \n");
+	printf("version of the software does not have these restrictions.          \n");
+	printf("===================================================================\n");
 
     print_sys_info();
 
@@ -688,8 +733,10 @@ int main (void) {
     trap_vect[0] = trp_isr;
     trap_vect[3] = msi_isr;
     trap_vect[7] = tmr_isr;
-    trap_vect[DMA_IRQ] = dma_isr;
     trap_vect[UART_IRQ] = uart_isr;
+#ifdef DMA_BASE
+    trap_vect[DMA_IRQ] = dma_isr;
+#endif
 
     // register trap vector
     CSRW(mtvec, trap_vect); CSRS(mtvec, 1);
@@ -697,7 +744,9 @@ int main (void) {
     // enable interrupt sources
     CSRS(mie, 1<<3);
 	CSRS(mie, 1L<<UART_IRQ);
+#ifdef DMA_BASE
 	CSRS(mie, 1L<<DMA_IRQ);
+#endif
 
     // enable global interrupt
     CSRS(mstatus, 1<<3);
@@ -716,7 +765,7 @@ int main (void) {
     	// Inbox event handler
 		msg_handler();
 
-		if (buffer_empty() && inbox_empty())
+		if (buffer_empty() && inbox_is_empty())
 		    MZONE_WFI();
 		else
 			MZONE_YIELD();

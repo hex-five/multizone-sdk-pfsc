@@ -9,8 +9,20 @@
 #define APB_AHB_FREQ 150012500 // 150MHz (UART)
 
 #define PMP 16
-#define IPC_RECV    0x01000A00 /* MultiZone TEE < AMP */
-#define IPC_SEND    0x01000A80 /* MultiZone TEE > AMP */
+
+// -----------------------------------------------------------------------------
+// IPC Buffers (MultiZone TEE <> AMP)
+// -----------------------------------------------------------------------------
+#define IPC_BASE 0x01000A00
+
+#define IPC_RECV_H1  0x000 /* H0 < H1 */
+#define IPC_SEND_H1  0x080 /* H0 > H1 */
+#define IPC_RECV_H2  0x100 /* H0 < H2 */
+#define IPC_SEND_H2  0x180 /* H0 > H2 */
+#define IPC_RECV_H3  0x200 /* H0 < H3 */
+#define IPC_SEND_H3  0x280 /* H0 > H3 */
+#define IPC_RECV_H4  0x300 /* H0 < H4 */
+#define IPC_SEND_H4  0x380 /* H0 > H4 */
 
 // -----------------------------------------------------------------------------
 // RTC (CLIC)
@@ -112,40 +124,57 @@
 #define SW3_CFG GPIO_CONFIG_31
 
 // -----------------------------------------------------------------------------
-// PLIC (shared)
+// PLIC (shared) - see mpfs_hal/common/mss_plic.h
 // ------------------------------------------------------------------------------
 #define PLIC_BASE 	0x0C000000UL
 
-#define PLIC_PRI_OFFSET 			0x0
-#define PLIC_PRI_SHIFT_PER_SOURCE 	2
-#define PLIC_EN_OFFSET				0x2000
-#define PLIC_EN_SHIFT_PER_TARGET	1
-#define PLIC_THRES_OFFSET			0x200000
-#define PLIC_CLAIM_OFFSET			0x200004
+#define PLIC_PRI			0
+#define PLIC_EN				0x002000
+#define PLIC_IP				0x001000
+#define PLIC_THRES			0x200000
+#define PLIC_CLAIM			0x200004
+#define PLIC_SHIFT_PER_SRC 	2
 
-#define PLIC_SOURCES 			187
-#define PLIC_UART0_RX_SOURCE	 90
-#define PLIC_SW1_SOURCE			118
-#define PLIC_SW2_SOURCE			 43 // GPIO2.30
-#define PLIC_SW3_SOURCE			 44 // GPIO2.31
+#define PLIC_SOURCES    187
+#define PLIC_SRC_UART0  90
+#define PLIC_SRC_SW1	118
+#define PLIC_SRC_SW2	43 // GPIO2.30
+#define PLIC_SRC_SW3	44 // GPIO2.31
+#define PLIC_SRC_MAC0	64 // J1
+#define PLIC_SRC_MAC1	70 // J2
+#define PLIC_SRC_MMC    88 // MMC
 
 // -----------------------------------------------------------------------------
-// DMA (single channel mockup)
+// Ethernet - Cadence GEM rev 0x0107010c at 0x20112000 irq 17
+// -----------------------------------------------------------------------------
+#define GEM_BASE 0x20112000 /* J2(?) MAC1 EM_GXIMICROSEMI GEM_B_LOW 8K */
+
+// -----------------------------------------------------------------------------
+// System Register Module - pfsoc_mss_top_sysreg
 // ------------------------------------------------------------------------------
-#define DMA_BASE 0x20009000UL
+#define SYS_BASE   0x20002000UL
 
-#define DMA_VER_OFF			0x00
-#define DMA_CFG_OFF			0x10
-#define DMA_CTRL_OFF		0x20
-#define DMA_CH_STATUS_OFF	0x30 /* TC: 1<<ch+16, AB: 1<<ch+8,  ERR: 1<<ch+0 */
-#define DMA_CH_ENABLE_OFF	0x34 /* 1<<ch */
-#define DMA_CH_ABORT_OFF	0x40 /* 1<<ch */
-#define DMA_CH_CTRL_OFF		0x44 /* +ch*0x14 */
-#define DMA_TR_SRC_OFF		0x48 /* +ch*0x14 */
-#define DMA_TR_DEST_OFF		0x4C /* +ch*0x14 */
-#define DMA_TR_SIZE_OFF		0x50 /* +ch*0x14 */
+#define TEMP0           0x00
+#define TEMP1           0x00
+#define MSS_RESET_CR    0x18
 
-#define DMA_IRQ 63 /* Mockup (U51 local 16+47 = H2_FABRIC_F2H_31_U54_INT) */
+// -----------------------------------------------------------------------------
+// DMA (single channel)
+// -----------------------------------------------------------------------------
+//#define DMA_BASE 	0x20009000
+//
+//#define DMA_VER		0x00
+//#define DMA_CFG		0x10
+//#define DMA_CTRL		0x20
+//#define DMA_CH_STATUS	0x30 /* TC: 1<<ch+16, AB: 1<<ch+8,  ERR: 1<<ch+0 */
+//#define DMA_CH_ENABLE	0x34 /* 1<<ch */
+//#define DMA_CH_ABORT	0x40 /* 1<<ch */
+//#define DMA_CH_CTRL	0x44 /* +ch*0x14 */
+//#define DMA_TR_SRC	0x48 /* +ch*0x14 */
+//#define DMA_TR_DEST	0x4C /* +ch*0x14 */
+//#define DMA_TR_SIZE	0x50 /* +ch*0x14 */
+//
+//#define DMA_IRQ 63 /* Mockup (U51 local 16+47 = H2_FABRIC_F2H_31_U54_INT) */
 
 
 // -----------------------------------------------------------------------------
@@ -160,6 +189,7 @@
 #define PWM_REG(offset)   _REG32(PWM_BASE, offset)
 #define UART_REG(offset)  _REG32(UART0_BASE, offset)
 #define PLIC_REG(offset)  _REG32(PLIC_BASE, offset)
+#define SYS_REG(offset)   _REG32(SYS_BASE, offset)
 #define DMA_REG(offset)   _REG32(DMA_BASE, offset)
 
 
